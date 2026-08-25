@@ -1,0 +1,828 @@
+{
+  "meta": {
+    "proyecto": "external (CRM + Facturacion Electronica)",
+    "descripcion": "Catalogo de plugins/modulos VENDIBLES (activables/desactivables por plan de organizacion), con su estado, servicio real que lo implementa (cuando existe) y dependencias entre si. 'infra_existente' son piezas base del sistema que toda organizacion tiene siempre activas: no se venden ni se activan/desactivan por plan, y algunas viven fisicamente dentro de otro servicio (ver campo 'note' en cada una). 'phase' es el orden sugerido de construccion (0 = ya existe/base, mayor numero = depende de mas cosas). 'status' de modulos: hecho, parcial, falta. 'service': carpeta real dentro de external/ que lo implementa, o null si no existe codigo.",
+    "total_modulos": 63,
+    "hechos": 9,
+    "parciales": 5,
+    "faltan": 49
+  },
+  "infra_existente": [
+    {
+      "id": "infra.gateway",
+      "name": "API Gateway (motor generico + config)",
+      "service": "api-gateway-node",
+      "note": "Punto unico de entrada, reverse proxy + JWT + inyeccion de headers. Siempre activo.",
+      "description": "Punto unico de entrada HTTP al sistema. Recibe todas las peticiones, verifica el JWT del usuario, extrae los datos del token (org_id, user_id, permisos) y los inyecta como headers de confianza (X-Organization-Id, etc.) antes de reenviar la peticion al microservicio correspondiente. Asi ningun servicio interno necesita validar tokens por su cuenta."
+    },
+    {
+      "id": "infra.catalog_products",
+      "name": "Catalogo de productos (incluye categorias y unidades de medida)",
+      "service": "product-service",
+      "note": "Verificado en migrations/20260706000000-create-product-tables.cjs: 'categories' y 'units' se crean en la MISMA migracion que 'products', con FK real products.category_id -> categories.id (onDelete SET NULL) y products.unit_id -> units.id. No son servicios separables; viven en la misma base de datos y el mismo dominio (src/domain/entities.ts). Por eso categorias y unidades NO son un nodo aparte.",
+      "description": "Catalogo central de productos y servicios de cada organizacion: nombre, SKU, precio (en centavos con Dinero.js), tipo (bien/servicio), impuestos asociados (M:N) e imagenes. Incluye categorias (con jerarquia padre-hijo) y unidades de medida como sub-recursos del mismo servicio, no como modulos aparte."
+    },
+    {
+      "id": "infra.tax_catalog",
+      "name": "Catalogo fiscal por pais (paises, tasas, tipos de identificacion/comprobante)",
+      "service": "tax-service",
+      "note": "Dato de PLATAFORMA (no por organizacion), particionado por country_code. Otros servicios consumen vía eventos tax.*.upserted y read-models locales.",
+      "description": "Fuente de verdad fiscal de la plataforma: catalogos de paises, tasas de impuestos, tipos de identificacion y tipos de comprobante. No pertenece a ninguna organizacion individual (es dato de plataforma) y se particiona por country_code; publica eventos que otros servicios consumen para armar sus propios read-models locales."
+    },
+    {
+      "id": "admin.users_roles",
+      "name": "Gestion de usuarios y roles",
+      "service": "auth-service-node",
+      "note": "Base del sistema: toda organizacion necesita usuarios y RBAC para operar. No es un plugin que se active/desactive por plan.",
+      "description": "Sistema de autenticacion y control de acceso basado en roles (RBAC): quien puede iniciar sesion, que rol tiene y que puede hacer dentro de la organizacion. Es el cimiento de seguridad que usan todos los demas modulos."
+    },
+    {
+      "id": "admin.multitenant",
+      "name": "Multi-tenant / perfil de organizacion",
+      "service": "organization-node-server",
+      "note": "Aislamiento por organization_id + perfil fiscal basico. Ninguna organizacion puede existir en el sistema sin esto. Siempre activo.",
+      "description": "Mecanismo que permite que una sola instalacion del sistema atienda a multiples organizaciones manteniendo sus datos completamente aislados entre si, identificando cada peticion por organization_id. Incluye el perfil fiscal basico (razon social, RUC, pais) y la estructura de establecimientos/puntos de emision."
+    },
+    {
+      "id": "admin.permissions",
+      "name": "Permisos granulares (RBAC)",
+      "service": "auth-service-node",
+      "note": "Mecanismo de autorizacion que usan todos los demas modulos para exponer o bloquear sus endpoints. Siempre activo, no vendible por separado.",
+      "description": "Capa de permisos granulares (ej. 'organization:update', 'establishment:create') que se valida en cada endpoint antes de ejecutar una accion, permitiendo dar acceso distinto a distintos roles dentro de la misma organizacion."
+    }
+  ],
+  "modulos": [
+    {
+      "id": "admin.audit_log",
+      "name": "Auditoria de acciones (logs)",
+      "category": "Administracion del Sistema",
+      "status": "falta",
+      "phase": 1,
+      "service": null,
+      "depends_on": [
+        "admin.users_roles"
+      ],
+      "description": "Registra quien hizo que accion, sobre que recurso y cuando (crear, editar, eliminar) dentro del sistema, dejando un historial inmutable util para investigar errores o accesos indebidos."
+    },
+    {
+      "id": "admin.org_settings",
+      "name": "Configuracion general de la organizacion",
+      "category": "Administracion del Sistema",
+      "status": "parcial",
+      "phase": 1,
+      "service": "organization-node-server",
+      "depends_on": [
+        "admin.multitenant"
+      ],
+      "description": "Permite configurar preferencias generales de la organizacion mas alla del perfil fiscal: nombre visible, zona horaria, idioma por defecto, logo, y otros ajustes que afectan la experiencia de todos sus usuarios."
+    },
+    {
+      "id": "admin.api_webhooks",
+      "name": "Integraciones via API/webhooks",
+      "category": "Administracion del Sistema",
+      "status": "parcial",
+      "phase": 1,
+      "service": "api-gateway-node",
+      "depends_on": [
+        "infra.gateway"
+      ],
+      "description": "Permite que la organizacion reciba una notificacion HTTP automatica hacia una URL propia cuando ocurre un evento en el sistema (ej. 'factura.creada'), o consumir APIs externas, para integrarse con otras herramientas sin intervencion manual."
+    },
+    {
+      "id": "crm.contacts",
+      "name": "Gestion de contactos y cuentas",
+      "category": "Ventas y CRM",
+      "status": "hecho",
+      "phase": 1,
+      "service": "customer-service",
+      "depends_on": [
+        "admin.multitenant"
+      ],
+      "description": "Guarda y administra los clientes de la organizacion: datos generales, contactos asociados (compras, finanzas), direcciones de facturacion/envio y etiquetas de segmentacion (VIP, mayorista, moroso). Es el nucleo del 'CRM puro': quien es el cliente, no que le vendes."
+    },
+    {
+      "id": "crm.leads_pipeline",
+      "name": "Leads y oportunidades (pipeline)",
+      "category": "Ventas y CRM",
+      "status": "falta",
+      "phase": 2,
+      "service": null,
+      "depends_on": [
+        "crm.contacts"
+      ],
+      "description": "Rastrea prospectos de venta desde el primer contacto hasta el cierre, organizados en etapas (pipeline) tipo kanban: nuevo lead, contactado, calificado, propuesta, ganado o perdido. Permite ver en que punto del embudo comercial esta cada oportunidad y priorizar el seguimiento."
+    },
+    {
+      "id": "crm.interaction_history",
+      "name": "Historial de interacciones",
+      "category": "Ventas y CRM",
+      "status": "falta",
+      "phase": 2,
+      "service": null,
+      "depends_on": [
+        "crm.contacts"
+      ],
+      "description": "Registra cronologicamente cada llamada, correo, reunion o nota relacionada con un cliente o lead, para que cualquier persona del equipo pueda ver el contexto completo antes de la siguiente interaccion."
+    },
+    {
+      "id": "crm.support_tickets",
+      "name": "Tickets/soporte postventa",
+      "category": "Ventas y CRM",
+      "status": "falta",
+      "phase": 2,
+      "service": null,
+      "depends_on": [
+        "crm.contacts"
+      ],
+      "description": "Sistema de tickets para solicitudes de soporte postventa: el cliente reporta un problema, se le asigna un estado (abierto, en progreso, resuelto), un responsable y un historial de respuestas, con metricas de tiempo de resolucion."
+    },
+    {
+      "id": "crm.marketing_automation",
+      "name": "Automatizacion de marketing / email marketing",
+      "category": "Ventas y CRM",
+      "status": "falta",
+      "phase": 2,
+      "service": null,
+      "depends_on": [
+        "crm.contacts"
+      ],
+      "description": "Permite crear y enviar campanas de email/marketing segmentadas por las etiquetas o atributos de los clientes (ej. solo clientes VIP), y automatizar secuencias como correo de bienvenida o recordatorio de carrito abandonado."
+    },
+    {
+      "id": "crm.quotes",
+      "name": "Cotizaciones y presupuestos",
+      "category": "Ventas y CRM",
+      "status": "falta",
+      "phase": 3,
+      "service": null,
+      "depends_on": [
+        "crm.leads_pipeline",
+        "infra.catalog_products"
+      ],
+      "description": "Genera cotizaciones o presupuestos formales para un cliente antes de la venta, tomando productos y precios del catalogo. Si el cliente acepta, la cotizacion se puede convertir directamente en una orden o factura, evitando digitar todo de nuevo."
+    },
+    {
+      "id": "crm.surveys",
+      "name": "Encuestas de satisfaccion (NPS, CSAT)",
+      "category": "Ventas y CRM",
+      "status": "falta",
+      "phase": 3,
+      "service": null,
+      "depends_on": [
+        "crm.support_tickets"
+      ],
+      "description": "Envia encuestas de satisfaccion (NPS: que tan probable es que nos recomiendes; CSAT: que tan satisfecho quedaste) tras una compra o ticket cerrado, y agrega los resultados en un puntaje por cliente o por periodo."
+    },
+    {
+      "id": "crm.customer_portal",
+      "name": "Portal de autoservicio para clientes",
+      "category": "Ventas y CRM",
+      "status": "falta",
+      "phase": 4,
+      "service": null,
+      "depends_on": [
+        "crm.support_tickets",
+        "crm.quotes"
+      ],
+      "description": "Sitio o seccion donde el propio cliente puede iniciar sesion para ver sus facturas, el estado de sus tickets de soporte, sus cotizaciones pendientes y su historial de compras, sin necesitar que alguien del equipo lo atienda manualmente."
+    },
+    {
+      "id": "finance.electronic_invoicing",
+      "name": "Facturacion electronica",
+      "category": "Facturacion y Finanzas",
+      "status": "hecho",
+      "phase": 2,
+      "service": "billing-service, fiscal-ecuador",
+      "depends_on": [
+        "infra.catalog_products",
+        "crm.contacts",
+        "infra.tax_catalog"
+      ],
+      "description": "Genera comprobantes electronicos validos ante la autoridad fiscal (en Ecuador, el SRI): calcula impuestos, arma el XML, lo firma digitalmente (XAdES-BES) con el certificado .p12 de la empresa y gestiona el secuencial por punto de emision."
+    },
+    {
+      "id": "finance.multicurrency",
+      "name": "Multi-moneda",
+      "category": "Facturacion y Finanzas",
+      "status": "hecho",
+      "phase": 1,
+      "service": "product-service",
+      "depends_on": [
+        "infra.catalog_products"
+      ],
+      "description": "Permite manejar precios y transacciones en distintas monedas, guardando siempre el valor monetario como entero en la unidad minima de la moneda (centavos) para evitar errores de redondeo en la aritmetica financiera."
+    },
+    {
+      "id": "finance.accounts_receivable_payable",
+      "name": "Cuentas por cobrar / cuentas por pagar",
+      "category": "Facturacion y Finanzas",
+      "status": "falta",
+      "phase": 3,
+      "service": null,
+      "depends_on": [
+        "finance.electronic_invoicing"
+      ],
+      "description": "Lleva el control de cuanto le debe cada cliente a la empresa (cuentas por cobrar) y cuanto le debe la empresa a sus proveedores (cuentas por pagar), con fechas de vencimiento, pagos parciales y saldo pendiente."
+    },
+    {
+      "id": "finance.general_ledger",
+      "name": "Contabilidad general (libro mayor, diario)",
+      "category": "Facturacion y Finanzas",
+      "status": "falta",
+      "phase": 4,
+      "service": null,
+      "depends_on": [
+        "finance.accounts_receivable_payable"
+      ],
+      "description": "El libro mayor y el diario contable: registra cada movimiento economico como una partida doble (debito/credito) contra el plan de cuentas de la empresa, siendo la base para armar los estados financieros."
+    },
+    {
+      "id": "finance.bank_reconciliation",
+      "name": "Conciliacion bancaria",
+      "category": "Facturacion y Finanzas",
+      "status": "falta",
+      "phase": 5,
+      "service": null,
+      "depends_on": [
+        "finance.general_ledger"
+      ],
+      "description": "Compara los movimientos registrados en la contabilidad contra el estado de cuenta bancario real, senalando diferencias (cheques no cobrados, comisiones bancarias no registradas) para que ambos cuadren."
+    },
+    {
+      "id": "finance.budgets",
+      "name": "Gestion de presupuestos",
+      "category": "Facturacion y Finanzas",
+      "status": "falta",
+      "phase": 5,
+      "service": null,
+      "depends_on": [
+        "finance.general_ledger"
+      ],
+      "description": "Permite definir un presupuesto por periodo y categoria de gasto o ingreso, y comparar en tiempo real lo presupuestado contra lo realmente gastado o vendido."
+    },
+    {
+      "id": "finance.cash_flow",
+      "name": "Flujo de caja",
+      "category": "Facturacion y Finanzas",
+      "status": "falta",
+      "phase": 5,
+      "service": null,
+      "depends_on": [
+        "finance.general_ledger"
+      ],
+      "description": "Muestra las entradas y salidas de efectivo proyectadas y reales a lo largo del tiempo, para anticipar si la empresa tendra liquidez suficiente en las proximas semanas o meses."
+    },
+    {
+      "id": "finance.fixed_assets",
+      "name": "Activos fijos y depreciacion",
+      "category": "Facturacion y Finanzas",
+      "status": "falta",
+      "phase": 5,
+      "service": null,
+      "depends_on": [
+        "finance.general_ledger"
+      ],
+      "description": "Registra los activos de larga duracion de la empresa (maquinaria, vehiculos, equipos) y calcula automaticamente su depreciacion periodica segun el metodo contable elegido."
+    },
+    {
+      "id": "finance.financial_reports",
+      "name": "Reportes financieros (balance, estado de resultados)",
+      "category": "Facturacion y Finanzas",
+      "status": "parcial",
+      "phase": 5,
+      "service": null,
+      "depends_on": [
+        "finance.general_ledger"
+      ],
+      "description": "Genera los estados financieros formales (balance general, estado de resultados) a partir de los datos del libro mayor, listos para presentar a un contador, banco o autoridad fiscal."
+    },
+    {
+      "id": "inventory.warehouses",
+      "name": "Gestion de almacenes/bodegas multiples",
+      "category": "Inventario y Cadena de Suministro",
+      "status": "falta",
+      "phase": 1,
+      "service": null,
+      "depends_on": [
+        "infra.catalog_products"
+      ],
+      "description": "Administra una o mas ubicaciones fisicas (bodegas/almacenes) donde se guarda el inventario, permitiendo saber en que bodega especifica esta cada unidad de stock."
+    },
+    {
+      "id": "inventory.suppliers",
+      "name": "Gestion de proveedores",
+      "category": "Inventario y Cadena de Suministro",
+      "status": "falta",
+      "phase": 1,
+      "service": null,
+      "depends_on": [
+        "admin.multitenant"
+      ],
+      "description": "Registra los proveedores de la empresa: datos de contacto, productos que suministran, condiciones de pago y plazos de entrega habituales."
+    },
+    {
+      "id": "inventory.kardex",
+      "name": "Control de stock / Kardex (PEPS, UEPS, CPP)",
+      "category": "Inventario y Cadena de Suministro",
+      "status": "parcial",
+      "phase": 2,
+      "service": "pos (solo cache local de stock: campo 'stock' en Product del schema Prisma del POS; no es un modulo real de inventario/kardex)",
+      "depends_on": [
+        "inventory.warehouses"
+      ],
+      "description": "Lleva el registro detallado de entradas y salidas de cada producto y calcula el costo de inventario usando un metodo definido (PEPS: primero en entrar primero en salir; UEPS: ultimo en entrar primero en salir; o CPP: costo promedio ponderado), dando el costo exacto de lo vendido y el valor del inventario restante."
+    },
+    {
+      "id": "inventory.purchase_orders",
+      "name": "Ordenes de compra (vista de inventario)",
+      "category": "Inventario y Cadena de Suministro",
+      "status": "falta",
+      "phase": 2,
+      "service": null,
+      "depends_on": [
+        "inventory.warehouses"
+      ],
+      "description": "Vista de inventario sobre las ordenes de compra: que mercancia se espera recibir, en que bodega entrara y cuando, para poder planear espacio y flujo de caja."
+    },
+    {
+      "id": "inventory.warehouse_transfers",
+      "name": "Transferencias entre bodegas",
+      "category": "Inventario y Cadena de Suministro",
+      "status": "falta",
+      "phase": 2,
+      "service": null,
+      "depends_on": [
+        "inventory.warehouses"
+      ],
+      "description": "Registra el movimiento de stock de una bodega a otra, descontando de la bodega origen y sumando en la bodega destino, manteniendo la trazabilidad de donde esta cada unidad."
+    },
+    {
+      "id": "inventory.lot_tracking",
+      "name": "Trazabilidad de lotes/series",
+      "category": "Inventario y Cadena de Suministro",
+      "status": "falta",
+      "phase": 3,
+      "service": null,
+      "depends_on": [
+        "inventory.kardex"
+      ],
+      "description": "Asocia cada unidad de stock a un lote o numero de serie especifico, permitiendo rastrear de donde vino (proveedor, fecha de fabricacion o caducidad) y a quien se le vendio, clave para retiros de producto o garantias."
+    },
+    {
+      "id": "inventory.reorder_alerts",
+      "name": "Alertas de reabastecimiento",
+      "category": "Inventario y Cadena de Suministro",
+      "status": "falta",
+      "phase": 3,
+      "service": null,
+      "depends_on": [
+        "inventory.kardex"
+      ],
+      "description": "Genera una alerta automatica cuando el stock de un producto cae por debajo de un umbral minimo definido, para que se genere una orden de compra antes de quedarse sin inventario."
+    },
+    {
+      "id": "pos.core",
+      "name": "Punto de Venta (POS)",
+      "category": "Punto de Venta",
+      "status": "hecho",
+      "phase": 1,
+      "service": "pos",
+      "depends_on": [
+        "infra.catalog_products",
+        "admin.users_roles"
+      ],
+      "description": "Aplicacion de punto de venta que permite registrar ventas rapidas en mostrador: buscar producto (por nombre, SKU o codigo de barras), calcular el total con impuestos y descuentos, y cerrar la venta, funcionando incluso sin conexion a internet gracias a una base de datos local (MySQL via Prisma) que luego sincroniza con el sistema central."
+    },
+    {
+      "id": "pos.cash_sessions",
+      "name": "Gestion de cajas y turnos",
+      "category": "Punto de Venta",
+      "status": "hecho",
+      "phase": 2,
+      "service": "pos",
+      "depends_on": [
+        "pos.core"
+      ],
+      "description": "Controla la apertura y cierre de caja por turno: el cajero registra el monto inicial en efectivo, el sistema calcula el monto esperado segun las ventas del turno, y al cerrar se compara contra el monto real contado, dejando evidencia de cualquier diferencia (sobrante o faltante)."
+    },
+    {
+      "id": "pos.payment_methods",
+      "name": "Multiples metodos de pago",
+      "category": "Punto de Venta",
+      "status": "hecho",
+      "phase": 2,
+      "service": "pos",
+      "depends_on": [
+        "pos.core"
+      ],
+      "description": "Permite registrar cada venta con un metodo de pago especifico (efectivo, tarjeta, transferencia u otro), incluso dividiendo una misma venta en varios metodos si el cliente paga combinado."
+    },
+    {
+      "id": "pos.offline_sync",
+      "name": "Sincronizacion offline/online",
+      "category": "Punto de Venta",
+      "status": "hecho",
+      "phase": 2,
+      "service": "pos",
+      "depends_on": [
+        "pos.core"
+      ],
+      "description": "Motor de sincronizacion que permite que el POS funcione sin internet: las ventas se guardan localmente y quedan marcadas como no sincronizadas hasta que hay conexion, momento en el que se suben al sistema central; los productos y precios se bajan (pull) desde el admin hacia el POS."
+    },
+    {
+      "id": "pos.discounts_promotions",
+      "name": "Descuentos y promociones",
+      "category": "Punto de Venta",
+      "status": "hecho",
+      "phase": 2,
+      "service": "pos",
+      "depends_on": [
+        "pos.core"
+      ],
+      "description": "Permite aplicar un descuento a nivel de venta completa o por producto individual al momento de cobrar, calculado antes del total final."
+    },
+    {
+      "id": "hr.employees",
+      "name": "Gestion de empleados (legajos)",
+      "category": "Recursos Humanos",
+      "status": "falta",
+      "phase": 1,
+      "service": null,
+      "depends_on": [
+        "admin.multitenant"
+      ],
+      "description": "Registro central de cada empleado de la organizacion: datos personales, cargo, fecha de ingreso, salario base y documentos asociados, el legajo digital de cada trabajador."
+    },
+    {
+      "id": "hr.attendance",
+      "name": "Asistencia y marcaciones",
+      "category": "Recursos Humanos",
+      "status": "falta",
+      "phase": 2,
+      "service": null,
+      "depends_on": [
+        "hr.employees"
+      ],
+      "description": "Registra la hora de entrada y salida de cada empleado (marcaciones), permitiendo calcular horas trabajadas, tardanzas y ausencias como base para la nomina."
+    },
+    {
+      "id": "hr.leave_management",
+      "name": "Control de vacaciones y permisos",
+      "category": "Recursos Humanos",
+      "status": "falta",
+      "phase": 2,
+      "service": null,
+      "depends_on": [
+        "hr.employees"
+      ],
+      "description": "Gestiona las solicitudes de vacaciones y permisos de los empleados: cuantos dias tiene disponibles, solicitud, aprobacion por parte de un jefe, y descuento automatico del saldo al aprobarse."
+    },
+    {
+      "id": "hr.performance_review",
+      "name": "Evaluacion de desempeno",
+      "category": "Recursos Humanos",
+      "status": "falta",
+      "phase": 2,
+      "service": null,
+      "depends_on": [
+        "hr.employees"
+      ],
+      "description": "Permite registrar evaluaciones periodicas de desempeno de cada empleado, con criterios definidos, puntajes y comentarios del evaluador, para dar seguimiento a su desarrollo."
+    },
+    {
+      "id": "hr.recruitment",
+      "name": "Reclutamiento y seleccion",
+      "category": "Recursos Humanos",
+      "status": "falta",
+      "phase": 2,
+      "service": null,
+      "depends_on": [
+        "hr.employees"
+      ],
+      "description": "Administra el proceso de contratacion: publicar una vacante, recibir postulaciones, avanzar candidatos por etapas (entrevista, prueba tecnica, oferta) hasta la contratacion final."
+    },
+    {
+      "id": "hr.payroll",
+      "name": "Nomina y roles de pago",
+      "category": "Recursos Humanos",
+      "status": "falta",
+      "phase": 5,
+      "service": null,
+      "depends_on": [
+        "hr.employees",
+        "hr.attendance",
+        "finance.general_ledger"
+      ],
+      "description": "Calcula automaticamente el pago periodico de cada empleado a partir de su salario base, las horas de asistencia registradas, deducciones (ej. seguridad social) y bonificaciones, generando el rol de pagos y su reflejo contable en el libro mayor."
+    },
+    {
+      "id": "production.bom",
+      "name": "Lista de materiales (BOM)",
+      "category": "Produccion/Manufactura",
+      "status": "falta",
+      "phase": 1,
+      "service": null,
+      "depends_on": [
+        "infra.catalog_products"
+      ],
+      "description": "Define la receta de fabricacion de un producto terminado: que materias primas y en que cantidad se necesitan para producir una unidad (Bill of Materials)."
+    },
+    {
+      "id": "production.orders",
+      "name": "Ordenes de produccion",
+      "category": "Produccion/Manufactura",
+      "status": "falta",
+      "phase": 3,
+      "service": null,
+      "depends_on": [
+        "production.bom",
+        "inventory.kardex"
+      ],
+      "description": "Documento que autoriza fabricar una cantidad especifica de un producto en una fecha determinada, descontando automaticamente del inventario las materias primas segun la BOM y sumando el producto terminado al finalizar."
+    },
+    {
+      "id": "production.quality_control",
+      "name": "Control de calidad",
+      "category": "Produccion/Manufactura",
+      "status": "falta",
+      "phase": 4,
+      "service": null,
+      "depends_on": [
+        "production.orders"
+      ],
+      "description": "Registra inspecciones de calidad sobre lo producido (aprobado, rechazado o reproceso), con criterios y observaciones, antes de que el producto pase a inventario disponible para venta."
+    },
+    {
+      "id": "production.maintenance",
+      "name": "Mantenimiento de maquinaria",
+      "category": "Produccion/Manufactura",
+      "status": "falta",
+      "phase": 4,
+      "service": null,
+      "depends_on": [
+        "production.orders"
+      ],
+      "description": "Programa y registra el mantenimiento preventivo y correctivo de la maquinaria usada en produccion, para evitar paros no planificados."
+    },
+    {
+      "id": "production.mrp",
+      "name": "Planificacion de recursos (MRP)",
+      "category": "Produccion/Manufactura",
+      "status": "falta",
+      "phase": 5,
+      "service": null,
+      "depends_on": [
+        "production.bom",
+        "inventory.kardex",
+        "purchasing.purchase_orders"
+      ],
+      "description": "Planificacion de Requerimiento de Materiales: cruza las ordenes de produccion planeadas contra el inventario actual y sugiere automaticamente que y cuanto comprar, y para cuando, para no quedarse sin materia prima."
+    },
+    {
+      "id": "projects.tasks_kanban",
+      "name": "Gestion de tareas (kanban/gantt)",
+      "category": "Proyectos",
+      "status": "falta",
+      "phase": 1,
+      "service": null,
+      "depends_on": [
+        "admin.multitenant"
+      ],
+      "description": "Organiza el trabajo de un proyecto en tareas visualizadas en tablero kanban (por hacer, en progreso, hecho) o en linea de tiempo (gantt), con responsables y fechas limite."
+    },
+    {
+      "id": "projects.time_tracking",
+      "name": "Seguimiento de horas",
+      "category": "Proyectos",
+      "status": "falta",
+      "phase": 2,
+      "service": null,
+      "depends_on": [
+        "projects.tasks_kanban"
+      ],
+      "description": "Permite a cada miembro del equipo registrar cuantas horas dedico a una tarea o proyecto especifico, base para medir productividad o facturar horas a un cliente."
+    },
+    {
+      "id": "projects.resource_allocation",
+      "name": "Asignacion de recursos",
+      "category": "Proyectos",
+      "status": "falta",
+      "phase": 2,
+      "service": null,
+      "depends_on": [
+        "projects.tasks_kanban",
+        "hr.employees"
+      ],
+      "description": "Asigna personas del equipo a tareas o proyectos especificos, controlando su carga de trabajo total para evitar sobreasignacion."
+    },
+    {
+      "id": "projects.project_billing",
+      "name": "Facturacion por proyecto",
+      "category": "Proyectos",
+      "status": "falta",
+      "phase": 3,
+      "service": null,
+      "depends_on": [
+        "projects.time_tracking",
+        "finance.electronic_invoicing"
+      ],
+      "description": "Genera una factura al cliente basada en las horas registradas en un proyecto (facturacion por tiempo) o en hitos completados, conectando el trabajo real con el cobro."
+    },
+    {
+      "id": "purchasing.requests",
+      "name": "Solicitudes de compra",
+      "category": "Compras",
+      "status": "falta",
+      "phase": 2,
+      "service": null,
+      "depends_on": [
+        "inventory.warehouses"
+      ],
+      "description": "Formulario interno donde cualquier area solicita la compra de algo (materia prima, insumos, activos), que luego pasa por aprobacion antes de convertirse en una orden de compra real."
+    },
+    {
+      "id": "purchasing.supplier_evaluation",
+      "name": "Evaluacion de proveedores",
+      "category": "Compras",
+      "status": "falta",
+      "phase": 2,
+      "service": null,
+      "depends_on": [
+        "inventory.suppliers"
+      ],
+      "description": "Califica a los proveedores segun criterios como cumplimiento de tiempos de entrega, calidad del producto y precio, para decidir con cuales seguir trabajando."
+    },
+    {
+      "id": "purchasing.quote_comparison",
+      "name": "Comparacion de cotizaciones",
+      "category": "Compras",
+      "status": "falta",
+      "phase": 3,
+      "service": null,
+      "depends_on": [
+        "purchasing.requests",
+        "inventory.suppliers"
+      ],
+      "description": "Permite pedir cotizaciones a varios proveedores para una misma necesidad de compra y compararlas lado a lado (precio, tiempo de entrega, condiciones) antes de decidir con quien comprar."
+    },
+    {
+      "id": "purchasing.purchase_orders",
+      "name": "Ordenes de compra",
+      "category": "Compras",
+      "status": "falta",
+      "phase": 4,
+      "service": null,
+      "depends_on": [
+        "purchasing.quote_comparison"
+      ],
+      "description": "Documento formal enviado a un proveedor confirmando que se compra, cantidad, precio acordado y fecha de entrega esperada; al recibir la mercancia, actualiza automaticamente el inventario."
+    },
+    {
+      "id": "bi.dashboards",
+      "name": "Dashboards ejecutivos",
+      "category": "Business Intelligence / Reportes",
+      "status": "falta",
+      "phase": 5,
+      "service": null,
+      "depends_on": [
+        "finance.general_ledger",
+        "inventory.kardex",
+        "crm.leads_pipeline"
+      ],
+      "description": "Panel visual con las metricas mas importantes del negocio (ventas del mes, inventario bajo, cuentas por cobrar vencidas) en un solo lugar, actualizado en tiempo real, para que un gerente no tenga que revisar cada modulo por separado."
+    },
+    {
+      "id": "bi.kpis",
+      "name": "KPIs personalizables",
+      "category": "Business Intelligence / Reportes",
+      "status": "falta",
+      "phase": 6,
+      "service": null,
+      "depends_on": [
+        "bi.dashboards"
+      ],
+      "description": "Permite definir indicadores clave de desempeno personalizados (ej. ticket promedio de venta, rotacion de inventario) con una meta y el valor actual, para medir que tan bien va el negocio contra un objetivo."
+    },
+    {
+      "id": "bi.exports",
+      "name": "Reportes exportables (Excel, PDF)",
+      "category": "Business Intelligence / Reportes",
+      "status": "falta",
+      "phase": 6,
+      "service": null,
+      "depends_on": [
+        "bi.dashboards"
+      ],
+      "description": "Genera reportes de cualquier modulo (ventas, inventario, contabilidad) en formato Excel o PDF, listos para compartir o imprimir fuera del sistema."
+    },
+    {
+      "id": "bi.predictive_analytics",
+      "name": "Analisis predictivo",
+      "category": "Business Intelligence / Reportes",
+      "status": "falta",
+      "phase": 6,
+      "service": null,
+      "depends_on": [
+        "bi.dashboards"
+      ],
+      "description": "Usa datos historicos (ventas pasadas, estacionalidad) para proyectar tendencias futuras, como estimar cuanto se vendera el proximo mes o cuando se agotara el stock de un producto."
+    },
+    {
+      "id": "comm.notifications",
+      "name": "Notificaciones push/email",
+      "category": "Comunicacion Interna",
+      "status": "parcial",
+      "phase": 1,
+      "service": "notification-service",
+      "depends_on": [
+        "admin.multitenant"
+      ],
+      "description": "Envia avisos automaticos a los usuarios por correo o notificacion push cuando ocurre un evento relevante (nueva factura, ticket asignado, stock bajo), usando plantillas predefinidas por tipo de evento."
+    },
+    {
+      "id": "comm.internal_chat",
+      "name": "Chat interno",
+      "category": "Comunicacion Interna",
+      "status": "falta",
+      "phase": 1,
+      "service": null,
+      "depends_on": [
+        "admin.users_roles"
+      ],
+      "description": "Canal de mensajeria en tiempo real entre miembros del equipo dentro de la misma organizacion, para coordinacion rapida sin salir del sistema."
+    },
+    {
+      "id": "comm.shared_calendar",
+      "name": "Calendario compartido",
+      "category": "Comunicacion Interna",
+      "status": "falta",
+      "phase": 1,
+      "service": null,
+      "depends_on": [
+        "admin.users_roles"
+      ],
+      "description": "Calendario compartido donde el equipo puede ver y coordinar reuniones, entregas o fechas limite de proyectos y tareas."
+    },
+    {
+      "id": "comm.shared_documents",
+      "name": "Documentos compartidos (base)",
+      "category": "Comunicacion Interna",
+      "status": "hecho",
+      "phase": 1,
+      "service": "document_service",
+      "depends_on": [
+        "admin.multitenant"
+      ],
+      "description": "Repositorio central de archivos adjuntos del sistema (imagenes, PDFs, XMLs de comprobantes) donde cualquier entidad (un cliente, un producto, una factura) puede tener archivos asociados de forma generica y polimorfica."
+    },
+    {
+      "id": "ecommerce.online_catalog",
+      "name": "Catalogo de productos online",
+      "category": "E-commerce",
+      "status": "falta",
+      "phase": 1,
+      "service": null,
+      "depends_on": [
+        "infra.catalog_products"
+      ],
+      "description": "Expone el catalogo de productos de la organizacion en una tienda web publica, con fotos, precios y descripciones, para que cualquier visitante pueda verlos sin iniciar sesion."
+    },
+    {
+      "id": "ecommerce.cart",
+      "name": "Carrito de compras",
+      "category": "E-commerce",
+      "status": "falta",
+      "phase": 2,
+      "service": null,
+      "depends_on": [
+        "ecommerce.online_catalog"
+      ],
+      "description": "Permite a un visitante de la tienda online ir agregando productos a un carrito antes de decidir comprar, calculando el subtotal en tiempo real."
+    },
+    {
+      "id": "ecommerce.payment_gateways",
+      "name": "Pasarelas de pago",
+      "category": "E-commerce",
+      "status": "falta",
+      "phase": 3,
+      "service": null,
+      "depends_on": [
+        "ecommerce.cart",
+        "finance.electronic_invoicing"
+      ],
+      "description": "Conecta el checkout de la tienda online con procesadores de pago externos (tarjeta, PayPal, transferencia) para cobrar la compra y confirmar el pago antes de despachar."
+    },
+    {
+      "id": "ecommerce.shipping",
+      "name": "Gestion de envios",
+      "category": "E-commerce",
+      "status": "falta",
+      "phase": 3,
+      "service": null,
+      "depends_on": [
+        "ecommerce.cart"
+      ],
+      "description": "Calcula costos de envio segun destino y peso, genera la guia de despacho y permite hacer seguimiento del estado del pedido hasta que llega al cliente."
+    }
+  ]
+}
