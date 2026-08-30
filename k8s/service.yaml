@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: plugin-catalog-service
+  labels:
+    app: plugin-catalog-service
+spec:
+  selector:
+    app: plugin-catalog-service
+  ports:
+    - name: http
+      port: 3011
+      targetPort: 3011
+      protocol: TCP
+  type: ClusterIP
