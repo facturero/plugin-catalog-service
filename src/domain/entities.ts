@@ -17,6 +17,7 @@ export interface PluginProps {
   priceCents: number;
   currency: string;
   isActive: boolean;
+  isCore: boolean;
   createdForOrganizationId: string | null;
   basedOnPluginId: string | null;
   createdAt: Date;
@@ -37,6 +38,7 @@ export class Plugin {
     priceCents: number;
     currency?: string;
     isActive?: boolean;
+    isCore?: boolean;
     createdForOrganizationId?: string | null;
     basedOnPluginId?: string | null;
   }): Plugin {
@@ -52,6 +54,7 @@ export class Plugin {
       priceCents: params.priceCents,
       currency: params.currency ?? 'USD',
       isActive: params.isActive ?? true,
+      isCore: params.isCore ?? false,
       createdForOrganizationId: params.createdForOrganizationId ?? null,
       basedOnPluginId: params.basedOnPluginId ?? null,
       createdAt: now,
@@ -73,6 +76,7 @@ export class Plugin {
   get priceCents(): number { return this.props.priceCents; }
   get currency(): string { return this.props.currency; }
   get isActive(): boolean { return this.props.isActive; }
+  get isCore(): boolean { return this.props.isCore; }
   get createdForOrganizationId(): string | null { return this.props.createdForOrganizationId; }
   get basedOnPluginId(): string | null { return this.props.basedOnPluginId; }
   get createdAt(): Date { return this.props.createdAt; }
@@ -83,7 +87,7 @@ export class Plugin {
   }
 
   get isBuyable(): boolean {
-    return this.props.buildStatus === 'disponible' && this.props.isActive;
+    return !this.props.isCore && this.props.buildStatus === 'disponible' && this.props.isActive;
   }
 
   isVisibleTo(organizationId: string | null): boolean {

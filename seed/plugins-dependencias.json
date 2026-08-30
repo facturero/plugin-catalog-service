@@ -1,9 +1,9 @@
 {
   "meta": {
     "proyecto": "external (CRM + Facturacion Electronica)",
-    "descripcion": "Catalogo de plugins/modulos VENDIBLES (activables/desactivables por plan de organizacion), con su estado, servicio real que lo implementa (cuando existe) y dependencias entre si. 'infra_existente' son piezas base del sistema que toda organizacion tiene siempre activas: no se venden ni se activan/desactivan por plan, y algunas viven fisicamente dentro de otro servicio (ver campo 'note' en cada una). 'phase' es el orden sugerido de construccion (0 = ya existe/base, mayor numero = depende de mas cosas). 'status' de modulos: hecho, parcial, falta. 'service': carpeta real dentro de external/ que lo implementa, o null si no existe codigo.",
-    "total_modulos": 63,
-    "hechos": 9,
+    "descripcion": "Catalogo de plugins/modulos VENDIBLES (activables/desactivables por plan de organizacion), con su estado, servicio real que lo implementa (cuando existe) y dependencias entre si. 'infra_existente' son piezas base del sistema que toda organizacion tiene siempre activas: no se venden ni se activan/desactivan por plan y se siembran en la tabla plugins con is_core = true, y algunas viven fisicamente dentro de otro servicio (ver campo 'note' en cada una). 'phase' es el orden sugerido de construccion (0 = ya existe/base, mayor numero = depende de mas cosas). 'status' de modulos: hecho, parcial, falta. 'service': carpeta real dentro de external/ que lo implementa, o null si no existe codigo.",
+    "total_modulos": 65,
+    "hechos": 11,
     "parciales": 5,
     "faltan": 49
   },
@@ -40,8 +40,8 @@
       "id": "admin.multitenant",
       "name": "Multi-tenant / perfil de organizacion",
       "service": "organization-node-server",
-      "note": "Aislamiento por organization_id + perfil fiscal basico. Ninguna organizacion puede existir en el sistema sin esto. Siempre activo.",
-      "description": "Mecanismo que permite que una sola instalacion del sistema atienda a multiples organizaciones manteniendo sus datos completamente aislados entre si, identificando cada peticion por organization_id. Incluye el perfil fiscal basico (razon social, RUC, pais) y la estructura de establecimientos/puntos de emision."
+      "note": "Aislamiento por organization_id + perfil fiscal basico. Ninguna organizacion puede existir en el sistema sin esto. Siempre activo (is_core).",
+      "description": "Mecanismo que permite que una sola instalacion del sistema atienda a multiples organizaciones manteniendo sus datos completamente aislados entre si, identificando cada peticion por organization_id. Incluye el perfil fiscal basico (razon social, RUC, pais). La estructura de establecimientos y puntos de emision se separo al modulo vendible 'org.establishments'."
     },
     {
       "id": "admin.permissions",
@@ -87,6 +87,18 @@
         "infra.gateway"
       ],
       "description": "Permite que la organizacion reciba una notificacion HTTP automatica hacia una URL propia cuando ocurre un evento en el sistema (ej. 'factura.creada'), o consumir APIs externas, para integrarse con otras herramientas sin intervencion manual."
+    },
+    {
+      "id": "org.establishments",
+      "name": "Establecimientos y puntos de emision",
+      "category": "Administracion del Sistema",
+      "status": "hecho",
+      "phase": 1,
+      "service": "organization-node-server",
+      "depends_on": [
+        "admin.multitenant"
+      ],
+      "description": "Administra los locales fisicos de la organizacion (matriz y sucursales) y los puntos de emision de cada uno. En Ecuador el secuencial de cada comprobante se numera con el codigo de establecimiento y el de punto de emision, por eso la facturacion electronica lo requiere. Una empresa que opera sin locales fisicos no necesita este modulo."
     },
     {
       "id": "crm.contacts",
@@ -187,6 +199,18 @@
       "description": "Sitio o seccion donde el propio cliente puede iniciar sesion para ver sus facturas, el estado de sus tickets de soporte, sus cotizaciones pendientes y su historial de compras, sin necesitar que alguien del equipo lo atienda manualmente."
     },
     {
+      "id": "finance.electronic_certificate",
+      "name": "Certificado electronico (.p12)",
+      "category": "Facturacion y Finanzas",
+      "status": "hecho",
+      "phase": 2,
+      "service": "organization-node-server",
+      "depends_on": [
+        "admin.multitenant"
+      ],
+      "description": "Carga y custodia del certificado de firma digital (.p12) de la organizacion, con el que se firman los comprobantes electronicos (XAdES-BES). Se administra por separado de la facturacion porque tiene su propio ciclo de vida: vencimiento, renovacion y reemplazo."
+    },
+    {
       "id": "finance.electronic_invoicing",
       "name": "Facturacion electronica",
       "category": "Facturacion y Finanzas",
@@ -196,7 +220,9 @@
       "depends_on": [
         "infra.catalog_products",
         "crm.contacts",
-        "infra.tax_catalog"
+        "infra.tax_catalog",
+        "org.establishments",
+        "finance.electronic_certificate"
       ],
       "description": "Genera comprobantes electronicos validos ante la autoridad fiscal (en Ecuador, el SRI): calcula impuestos, arma el XML, lo firma digitalmente (XAdES-BES) con el certificado .p12 de la empresa y gestiona el secuencial por punto de emision."
     },

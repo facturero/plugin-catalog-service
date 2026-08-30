@@ -9,12 +9,19 @@ export interface PluginDTO {
   priceCents: number;
   currency: string;
   isActive: boolean;
+  isCore: boolean;
   isPublic: boolean;
   createdForOrganizationId: string | null;
   basedOnPluginId: string | null;
 }
 
-export type DisplayStatus = 'en_construccion' | 'disponible' | 'comprado' | 'desactivado';
+export type DisplayStatus =
+  | 'en_construccion'
+  | 'disponible'
+  | 'comprado'
+  | 'desactivado'
+  /** Plugin del nucleo: activo para todos, no se compra ni se apaga. */
+  | 'incluido';
 
 export interface CatalogPluginDTO extends PluginDTO {
   display_status: DisplayStatus;

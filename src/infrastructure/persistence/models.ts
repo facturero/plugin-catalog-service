@@ -15,6 +15,7 @@ export class PluginModel extends Model<
   declare price_cents: number;
   declare currency: string;
   declare is_active: boolean;
+  declare is_core: boolean;
   declare created_for_organization_id: string | null;
   declare based_on_plugin_id: string | null;
   declare created_at: Date;
@@ -37,6 +38,7 @@ PluginModel.init(
     price_cents: { type: DataTypes.BIGINT, allowNull: false },
     currency: { type: DataTypes.CHAR(3), allowNull: false, defaultValue: 'USD' },
     is_active: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true },
+    is_core: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
     created_for_organization_id: { type: DataTypes.CHAR(36), allowNull: true },
     based_on_plugin_id: { type: DataTypes.CHAR(36), allowNull: true },
     created_at: DataTypes.DATE,

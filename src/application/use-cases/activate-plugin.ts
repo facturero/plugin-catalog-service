@@ -2,6 +2,7 @@ import { UnitOfWork } from '../ports';
 import { OrganizationPluginDTO } from '../dtos';
 import { OrganizationPlugin } from '../../domain/entities';
 import {
+  CorePluginNotConfigurableError,
   MissingDependenciesError,
   PluginAlreadyActiveError,
   PluginNotAvailableError,
@@ -17,6 +18,7 @@ export class ActivatePluginUseCase {
       const plugin = await repos.plugins.findByCode(pluginCode);
       if (!plugin) throw new PluginNotFoundError();
       if (!plugin.isVisibleTo(organizationId)) throw new PluginNotVisibleToOrganizationError();
+      if (plugin.isCore) throw new CorePluginNotConfigurableError(plugin.code);
       if (!plugin.isBuyable) throw new PluginNotAvailableError(plugin.buildStatus);
 
       const existing = await repos.organizationPlugins.find(organizationId, plugin.id);

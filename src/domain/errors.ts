@@ -49,6 +49,17 @@ export class PluginNotVisibleToOrganizationError extends AppError {
   constructor(message = 'Plugin no encontrado.') { super(message); }
 }
 
+/** El núcleo está siempre activo para todas las organizaciones: no se compra ni se apaga. */
+export class CorePluginNotConfigurableError extends AppError {
+  readonly code = 'CORE_PLUGIN_NOT_CONFIGURABLE';
+  readonly httpStatus = 409;
+  constructor(pluginCode: string) {
+    super(
+      `El plugin '${pluginCode}' es parte del núcleo del sistema: está siempre activo y no se puede activar ni desactivar.`,
+    );
+  }
+}
+
 export class PluginNotAvailableError extends AppError {
   readonly code = 'PLUGIN_NOT_AVAILABLE';
   readonly httpStatus = 422;

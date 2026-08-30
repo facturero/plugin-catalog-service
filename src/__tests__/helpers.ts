@@ -25,6 +25,7 @@ export function createPlugin(params: Partial<{
   buildStatus: 'disponible' | 'en_construccion' | 'descontinuado';
   priceCents: number;
   isActive: boolean;
+  isCore: boolean;
   createdForOrganizationId: string | null;
 }>): Plugin {
   return Plugin.create({
@@ -35,6 +36,7 @@ export function createPlugin(params: Partial<{
     priceCents: params.priceCents ?? 0,
     buildStatus: params.buildStatus ?? 'disponible',
     isActive: params.isActive ?? true,
+    isCore: params.isCore ?? false,
     createdForOrganizationId: params.createdForOrganizationId ?? null,
     ...(params.id ? { id: params.id } : {}),
   });

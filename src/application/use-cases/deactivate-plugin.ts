@@ -2,6 +2,7 @@ import { UnitOfWork } from '../ports';
 import { OrganizationPluginDTO } from '../dtos';
 import {
   BlockingDependentsError,
+  CorePluginNotConfigurableError,
   PluginNotFoundError,
 } from '../../domain/errors';
 
@@ -12,6 +13,7 @@ export class DeactivatePluginUseCase {
     return this.uow.execute(async (repos) => {
       const plugin = await repos.plugins.findByCode(pluginCode);
       if (!plugin) throw new PluginNotFoundError();
+      if (plugin.isCore) throw new CorePluginNotConfigurableError(plugin.code);
 
       const target = await repos.organizationPlugins.find(organizationId, plugin.id);
       if (!target || target.status !== 'active') throw new PluginNotFoundError();

@@ -50,6 +50,7 @@ export function toDto(p: {
   priceCents: number;
   currency: string;
   isActive: boolean;
+  isCore: boolean;
   isPublic: boolean;
   createdForOrganizationId: string | null;
   basedOnPluginId: string | null;
@@ -65,6 +66,7 @@ export function toDto(p: {
     priceCents: p.priceCents,
     currency: p.currency,
     isActive: p.isActive,
+    isCore: p.isCore,
     isPublic: p.isPublic,
     createdForOrganizationId: p.createdForOrganizationId,
     basedOnPluginId: p.basedOnPluginId,

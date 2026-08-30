@@ -44,12 +44,15 @@ export class GetCatalogUseCase {
         priceCents: p.priceCents,
         currency: p.currency,
         isActive: p.isActive,
+        isCore: p.isCore,
         isPublic: p.isPublic,
         createdForOrganizationId: p.createdForOrganizationId,
         basedOnPluginId: p.basedOnPluginId,
       };
       let display_status: DisplayStatus;
-      if (p.buildStatus !== 'disponible') {
+      if (p.isCore) {
+        display_status = 'incluido';
+      } else if (p.buildStatus !== 'disponible') {
         display_status = 'en_construccion';
       } else {
         const row = rowByPlugin.get(p.id);
