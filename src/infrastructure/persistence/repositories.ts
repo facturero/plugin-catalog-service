@@ -6,6 +6,7 @@ import {
   OutboxModel,
   PluginCustomRequestModel,
   PluginDependencyModel,
+  PluginTranslationModel,
   PluginModel,
 } from './models';
 import {
@@ -21,6 +22,7 @@ import {
   OutboxRepository,
   PluginCustomRequestRepository,
   PluginDependencyRepository,
+  PluginTranslationRepository,
   PluginRepository,
   Repositories,
 } from '../../domain/repositories';
@@ -280,9 +282,29 @@ function outboxRepository(tx?: Transaction): OutboxRepository {
   };
 }
 
+function pluginTranslationRepository(tx?: Transaction): PluginTranslationRepository {
+  return {
+    async mapByLocale(locale) {
+      const ms = await PluginTranslationModel.findAll({ where: { locale }, transaction: tx });
+      return new Map(
+        ms.map((m) => [
+          m.plugin_id,
+          {
+            pluginId: m.plugin_id,
+            name: m.name,
+            category: m.category,
+            description: m.description,
+          },
+        ]),
+      );
+    },
+  };
+}
+
 export function buildRepositories(tx?: Transaction): Repositories {
   return {
     plugins: pluginRepository(tx),
+    translations: pluginTranslationRepository(tx),
     dependencies: pluginDependencyRepository(tx),
     organizationPlugins: organizationPluginRepository(tx),
     customRequests: pluginCustomRequestRepository(tx),

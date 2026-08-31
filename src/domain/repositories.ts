@@ -18,6 +18,22 @@ export interface PluginRepository {
   save(plugin: Plugin): Promise<void>;
 }
 
+/** Traducción de los campos de texto de un plugin a un idioma concreto. */
+export interface PluginTranslation {
+  pluginId: string;
+  name: string;
+  category: string;
+  description: string;
+}
+
+export interface PluginTranslationRepository {
+  /**
+   * Traducciones de todos los plugins para un idioma. Devuelve un mapa vacío si
+   * el idioma no tiene traducciones cargadas: quien llama cae al idioma base.
+   */
+  mapByLocale(locale: string): Promise<Map<string, PluginTranslation>>;
+}
+
 export interface PluginDependencyRepository {
   /** Todas las aristas del grafo (tabla pequeña). */
   listAll(): Promise<PluginDependency[]>;
@@ -48,6 +64,7 @@ export interface OutboxRepository {
 
 export interface Repositories {
   plugins: PluginRepository;
+  translations: PluginTranslationRepository;
   dependencies: PluginDependencyRepository;
   organizationPlugins: OrganizationPluginRepository;
   customRequests: PluginCustomRequestRepository;

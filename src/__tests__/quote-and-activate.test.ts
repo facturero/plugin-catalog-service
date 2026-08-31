@@ -10,10 +10,11 @@ describe('QuoteActivationUseCase', () => {
     const uow = createInMemoryUow();
     const { a } = seedExampleWorld(uow.repos);
     const useCase = new QuoteActivationUseCase(
-      uow.repos.plugins,
-      uow.repos.dependencies,
-      uow.repos.organizationPlugins,
-    );
+    uow.repos.plugins,
+    uow.repos.dependencies,
+    uow.repos.organizationPlugins,
+    uow.repos.translations,
+  );
 
     const quote = await useCase.execute('org-1', a.code);
 
@@ -32,10 +33,11 @@ describe('QuoteActivationUseCase', () => {
       OrganizationPlugin.activateDirect('org-1', b.id),
     );
     const useCase = new QuoteActivationUseCase(
-      uow.repos.plugins,
-      uow.repos.dependencies,
-      uow.repos.organizationPlugins,
-    );
+    uow.repos.plugins,
+    uow.repos.dependencies,
+    uow.repos.organizationPlugins,
+    uow.repos.translations,
+  );
 
     const quote = await useCase.execute('org-1', a.code);
 

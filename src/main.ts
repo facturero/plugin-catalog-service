@@ -24,9 +24,23 @@ async function bootstrap(): Promise<void> {
 
   const app = createApp({
     useCases: {
-      getCatalog: new GetCatalogUseCase(repos.plugins, repos.dependencies, repos.organizationPlugins),
-      getOrganizationPlugins: new GetOrganizationPluginsUseCase(repos.organizationPlugins, repos.plugins),
-      quoteActivation: new QuoteActivationUseCase(repos.plugins, repos.dependencies, repos.organizationPlugins),
+      getCatalog: new GetCatalogUseCase(
+        repos.plugins,
+        repos.dependencies,
+        repos.organizationPlugins,
+        repos.translations,
+      ),
+      getOrganizationPlugins: new GetOrganizationPluginsUseCase(
+        repos.organizationPlugins,
+        repos.plugins,
+        repos.translations,
+      ),
+      quoteActivation: new QuoteActivationUseCase(
+        repos.plugins,
+        repos.dependencies,
+        repos.organizationPlugins,
+        repos.translations,
+      ),
       activatePlugin: new ActivatePluginUseCase(unitOfWork),
       deactivatePlugin: new DeactivatePluginUseCase(unitOfWork),
       requestCustomPlugin: new RequestCustomPluginUseCase(unitOfWork),

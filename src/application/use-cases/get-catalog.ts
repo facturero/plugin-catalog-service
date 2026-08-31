@@ -3,19 +3,27 @@ import {
   OrganizationPluginRepository,
   PluginDependencyRepository,
   PluginRepository,
+  PluginTranslationRepository,
 } from '../../domain/repositories';
+import { BASE_LOCALE, localizeText } from '../localization';
 
 export class GetCatalogUseCase {
   constructor(
     private readonly plugins: PluginRepository,
     private readonly dependencies: PluginDependencyRepository,
     private readonly organizationPlugins: OrganizationPluginRepository,
+    private readonly translations: PluginTranslationRepository,
   ) {}
 
-  async execute(organizationId: string | null): Promise<CatalogPluginDTO[]> {
+  async execute(organizationId: string | null, locale: string = BASE_LOCALE): Promise<CatalogPluginDTO[]> {
     const visible = await this.plugins.listVisibleTo(organizationId);
     const rows = organizationId === null ? [] : await this.organizationPlugins.listByOrganization(organizationId);
     const edges = await this.dependencies.listAll();
+    // El idioma base ya está en la propia fila del plugin: no hace falta consulta.
+    const texts =
+      locale === BASE_LOCALE
+        ? new Map()
+        : await this.translations.mapByLocale(locale);
 
     const rowByPlugin = new Map(rows.map((r) => [r.pluginId, r]));
     const byId = new Map(visible.map((p) => [p.id, p]));
@@ -26,19 +34,28 @@ export class GetCatalogUseCase {
       if (!target) continue;
       if (!depsByPlugin.has(e.pluginId)) depsByPlugin.set(e.pluginId, []);
       depsByPlugin.get(e.pluginId)!.push({
+        // El nombre del requisito también se traduce: se muestra al usuario
+        // en la tarjeta del catálogo.
         code: target.code,
-        name: target.name,
+        name: localizeText(
+          { name: target.name, category: target.category, description: target.description },
+          texts.get(target.id),
+        ).name,
         autoActivate: e.autoActivate,
       });
     }
 
     return visible.map((p): CatalogPluginDTO => {
+      const text = localizeText(
+        { name: p.name, category: p.category, description: p.description },
+        texts.get(p.id),
+      );
       const base: PluginDTO = {
         id: p.id,
         code: p.code,
-        name: p.name,
-        category: p.category,
-        description: p.description,
+        name: text.name,
+        category: text.category,
+        description: text.description,
         imageUrl: p.imageUrl,
         buildStatus: p.buildStatus,
         priceCents: p.priceCents,

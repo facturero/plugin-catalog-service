@@ -23,10 +23,11 @@ describe('plugins del núcleo', () => {
   it('aparece en el catálogo con display_status "incluido"', async () => {
     const { uow, core, vendible } = await seedWorld();
     const catalog = await new GetCatalogUseCase(
-      uow.repos.plugins,
-      uow.repos.dependencies,
-      uow.repos.organizationPlugins,
-    ).execute('org-1');
+    uow.repos.plugins,
+    uow.repos.dependencies,
+    uow.repos.organizationPlugins,
+    uow.repos.translations,
+  ).execute('org-1');
 
     const byCode = new Map(catalog.map((p) => [p.code, p]));
     expect(byCode.get(core.code)?.display_status).toBe('incluido');

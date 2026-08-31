@@ -14,7 +14,7 @@ type Ctx = Context<{ Variables: ContextVariables }>;
 
 export function getPublicCatalogController(useCase: GetCatalogUseCase) {
   return async (c: Ctx) => {
-    const result = await useCase.execute(null);
+    const result = await useCase.execute(null, c.get('locale'));
     return c.json(result, 200);
   };
 }
@@ -22,7 +22,7 @@ export function getPublicCatalogController(useCase: GetCatalogUseCase) {
 export function getCatalogController(useCase: GetCatalogUseCase) {
   return async (c: Ctx) => {
     const orgId = c.get('organizationId');
-    const result = await useCase.execute(orgId);
+    const result = await useCase.execute(orgId, c.get('locale'));
     return c.json(result, 200);
   };
 }
@@ -30,7 +30,7 @@ export function getCatalogController(useCase: GetCatalogUseCase) {
 export function getOrganizationPluginsController(useCase: GetOrganizationPluginsUseCase) {
   return async (c: Ctx) => {
     const orgId = c.get('organizationId');
-    const result = await useCase.execute(orgId);
+    const result = await useCase.execute(orgId, c.get('locale'));
     return c.json(result, 200);
   };
 }
@@ -39,7 +39,7 @@ export function quoteController(useCase: QuoteActivationUseCase) {
   return async (c: Ctx) => {
     const orgId = c.get('organizationId');
     const { code } = c.req.valid('param' as never) as { code: string };
-    const result = await useCase.execute(orgId, code);
+    const result = await useCase.execute(orgId, code, c.get('locale'));
     return c.json(result, 200);
   };
 }

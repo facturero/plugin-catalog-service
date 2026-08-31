@@ -4,11 +4,14 @@ import {
   ForbiddenError,
   OrganizationContextRequiredError,
 } from '../../domain/errors';
+import { resolveLocale, SupportedLocale } from '../../application/localization';
 
 export type ContextVariables = {
   organizationId: string;
   userId: string;
   permissions: string[];
+  /** Idioma negociado desde `Accept-Language`; siempre uno de los soportados. */
+  locale: SupportedLocale;
 };
 
 export function contextMiddleware(): MiddlewareHandler<{
@@ -22,6 +25,8 @@ export function contextMiddleware(): MiddlewareHandler<{
     if (orgId) c.set('organizationId', orgId);
     if (userId) c.set('userId', userId);
     if (perms) c.set('permissions', perms.split(',').map((p) => p.trim()));
+    // El gateway reenvía la cabecera tal cual desde el navegador.
+    c.set('locale', resolveLocale(c.req.header('Accept-Language')));
 
     await next();
   };

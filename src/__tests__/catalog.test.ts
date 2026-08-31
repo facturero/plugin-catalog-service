@@ -25,10 +25,11 @@ describe('GetCatalogUseCase', () => {
     const uow = createInMemoryUow();
     await seedCatalogWorld(uow);
     const useCase = new GetCatalogUseCase(
-      uow.repos.plugins,
-      uow.repos.dependencies,
-      uow.repos.organizationPlugins,
-    );
+    uow.repos.plugins,
+    uow.repos.dependencies,
+    uow.repos.organizationPlugins,
+    uow.repos.translations,
+  );
 
     const catalog = await useCase.execute(null);
 
@@ -42,10 +43,11 @@ describe('GetCatalogUseCase', () => {
     const uow = createInMemoryUow();
     await seedCatalogWorld(uow);
     const useCase = new GetCatalogUseCase(
-      uow.repos.plugins,
-      uow.repos.dependencies,
-      uow.repos.organizationPlugins,
-    );
+    uow.repos.plugins,
+    uow.repos.dependencies,
+    uow.repos.organizationPlugins,
+    uow.repos.translations,
+  );
 
     const catalog = await useCase.execute('org-x');
 
@@ -61,10 +63,11 @@ describe('GetCatalogUseCase', () => {
     const solo = createPlugin({ code: 'solo.one', priceCents: 1000 });
     await uow.repos.plugins.save(solo);
     const useCase = new GetCatalogUseCase(
-      uow.repos.plugins,
-      uow.repos.dependencies,
-      uow.repos.organizationPlugins,
-    );
+    uow.repos.plugins,
+    uow.repos.dependencies,
+    uow.repos.organizationPlugins,
+    uow.repos.translations,
+  );
 
     // Sin fila
     let item = (await useCase.execute('org-x')).find((c) => c.code === 'solo.one')!;
@@ -92,10 +95,11 @@ describe('GetCatalogUseCase', () => {
     await uow.repos.organizationPlugins.save(OrganizationPlugin.activateDirect('org-x', wip.id));
 
     const useCase = new GetCatalogUseCase(
-      uow.repos.plugins,
-      uow.repos.dependencies,
-      uow.repos.organizationPlugins,
-    );
+    uow.repos.plugins,
+    uow.repos.dependencies,
+    uow.repos.organizationPlugins,
+    uow.repos.translations,
+  );
     const item = (await useCase.execute('org-x')).find((c) => c.code === 'wip.one')!;
     expect(item.display_status).toBe('en_construccion');
 
@@ -107,10 +111,11 @@ describe('GetCatalogUseCase', () => {
     const uow = createInMemoryUow();
     await seedCatalogWorld(uow);
     const useCase = new GetCatalogUseCase(
-      uow.repos.plugins,
-      uow.repos.dependencies,
-      uow.repos.organizationPlugins,
-    );
+    uow.repos.plugins,
+    uow.repos.dependencies,
+    uow.repos.organizationPlugins,
+    uow.repos.translations,
+  );
 
     const catalog = await useCase.execute('org-x');
     const pub = catalog.find((c) => c.code === 'pub.one')!;
@@ -123,10 +128,11 @@ describe('GetCatalogUseCase', () => {
     const uow = createInMemoryUow();
     await seedCatalogWorld(uow);
     const useCase = new GetCatalogUseCase(
-      uow.repos.plugins,
-      uow.repos.dependencies,
-      uow.repos.organizationPlugins,
-    );
+    uow.repos.plugins,
+    uow.repos.dependencies,
+    uow.repos.organizationPlugins,
+    uow.repos.translations,
+  );
 
     const catalog = await useCase.execute(null);
     expect(catalog.length).toBeGreaterThan(0);

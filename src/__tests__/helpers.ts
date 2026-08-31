@@ -6,6 +6,8 @@ import {
   PluginCustomRequestRepository,
   PluginDependencyRepository,
   PluginRepository,
+  PluginTranslation,
+  PluginTranslationRepository,
   Repositories,
 } from '../domain/repositories';
 import { PluginDependencyCycleError } from '../domain/errors';
@@ -44,6 +46,9 @@ export function createPlugin(params: Partial<{
 
 export function createInMemoryRepositories(): Repositories & { events: DomainEvent[] } {
   const plugins = new Map<string, Plugin>();
+  // Traducciones por `${locale}|${pluginId}`. Vacío por defecto: los tests que
+  // no las siembran ejercitan el fallback al idioma base.
+  const translations = new Map<string, PluginTranslation>();
   const deps = new Map<string, PluginDependency>();
   const orgPlugins = new Map<string, OrganizationPlugin>();
   const requests = new Map<string, PluginCustomRequest>();
@@ -147,10 +152,22 @@ export function createInMemoryRepositories(): Repositories & { events: DomainEve
     },
   };
 
+  const translationRepo: PluginTranslationRepository = {
+    async mapByLocale(locale) {
+      const out = new Map<string, PluginTranslation>();
+      for (const [key, value] of translations) {
+        const [loc, pluginId] = key.split('|');
+        if (loc === locale) out.set(pluginId, value);
+      }
+      return out;
+    },
+  };
+
   return {
     events,
-    __internals: { plugins, deps, orgPlugins, requests, depKey },
+    __internals: { plugins, deps, orgPlugins, requests, depKey, translations },
     plugins: pluginRepo,
+    translations: translationRepo,
     dependencies: dependencyRepo,
     organizationPlugins: orgPluginRepo,
     customRequests: requestRepo,
@@ -163,6 +180,7 @@ export function createInMemoryRepositories(): Repositories & { events: DomainEve
       orgPlugins: Map<string, OrganizationPlugin>;
       requests: Map<string, PluginCustomRequest>;
       depKey: (a: string, b: string) => string;
+      translations: Map<string, PluginTranslation>;
     };
   };
 }

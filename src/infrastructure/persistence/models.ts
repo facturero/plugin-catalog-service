@@ -47,6 +47,28 @@ PluginModel.init(
   { sequelize, tableName: 'plugins', timestamps: false },
 );
 
+export class PluginTranslationModel extends Model<
+  InferAttributes<PluginTranslationModel>,
+  InferCreationAttributes<PluginTranslationModel>
+> {
+  declare plugin_id: string;
+  declare locale: string;
+  declare name: string;
+  declare category: string;
+  declare description: string;
+}
+
+PluginTranslationModel.init(
+  {
+    plugin_id: { type: DataTypes.CHAR(36), primaryKey: true },
+    locale: { type: DataTypes.STRING(5), primaryKey: true },
+    name: { type: DataTypes.STRING(255), allowNull: false },
+    category: { type: DataTypes.STRING(100), allowNull: false },
+    description: { type: DataTypes.TEXT, allowNull: false },
+  },
+  { sequelize, tableName: 'plugin_translations', timestamps: false },
+);
+
 export class PluginDependencyModel extends Model<
   InferAttributes<PluginDependencyModel>,
   InferCreationAttributes<PluginDependencyModel>

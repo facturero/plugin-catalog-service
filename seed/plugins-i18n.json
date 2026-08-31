@@ -1,0 +1,318 @@
+{
+  "_meta": {
+    "descripcion": "Traducciones del catalogo de plugins. El idioma base (es) vive en seed/plugins-dependencias.json y en la tabla plugins; aqui solo van los idiomas adicionales. Las claves son el code del plugin.",
+    "locales": ["en", "fr"],
+    "categorias": {
+      "Nucleo del sistema": { "en": "System core", "fr": "Noyau du système" },
+      "Administracion del Sistema": { "en": "System Administration", "fr": "Administration du système" },
+      "Business Intelligence / Reportes": { "en": "Business Intelligence / Reports", "fr": "Business Intelligence / Rapports" },
+      "Compras": { "en": "Purchasing", "fr": "Achats" },
+      "Comunicacion Interna": { "en": "Internal Communication", "fr": "Communication interne" },
+      "E-commerce": { "en": "E-commerce", "fr": "E-commerce" },
+      "Facturacion y Finanzas": { "en": "Invoicing and Finance", "fr": "Facturation et finances" },
+      "Inventario y Cadena de Suministro": { "en": "Inventory and Supply Chain", "fr": "Inventaire et chaîne d'approvisionnement" },
+      "Produccion/Manufactura": { "en": "Production / Manufacturing", "fr": "Production / Fabrication" },
+      "Proyectos": { "en": "Projects", "fr": "Projets" },
+      "Punto de Venta": { "en": "Point of Sale", "fr": "Point de vente" },
+      "Recursos Humanos": { "en": "Human Resources", "fr": "Ressources humaines" },
+      "Ventas y CRM": { "en": "Sales and CRM", "fr": "Ventes et CRM" }
+    }
+  },
+
+  "infra.gateway": {
+    "en": { "name": "API Gateway (generic engine + config)", "description": "The single HTTP entry point to the system. It receives every request, verifies the user's JWT, extracts the token data (org_id, user_id, permissions) and injects them as trusted headers (X-Organization-Id, etc.) before forwarding the request to the matching microservice. That way no internal service has to validate tokens on its own." },
+    "fr": { "name": "Passerelle API (moteur générique + configuration)", "description": "Point d'entrée HTTP unique du système. Elle reçoit toutes les requêtes, vérifie le JWT de l'utilisateur, en extrait les données (org_id, user_id, permissions) et les injecte comme en-têtes de confiance (X-Organization-Id, etc.) avant de transmettre la requête au microservice correspondant. Aucun service interne n'a ainsi besoin de valider les jetons lui-même." }
+  },
+  "infra.catalog_products": {
+    "en": { "name": "Product catalog (includes categories and units of measure)", "description": "The central catalog of each organization's products and services: name, SKU, price (in cents with Dinero.js), type (good/service), associated taxes (M:N) and images. It includes categories (with parent-child hierarchy) and units of measure as sub-resources of the same service, not as separate modules." },
+    "fr": { "name": "Catalogue de produits (catégories et unités de mesure incluses)", "description": "Catalogue central des produits et services de chaque organisation : nom, SKU, prix (en centimes avec Dinero.js), type (bien/service), taxes associées (M:N) et images. Il inclut les catégories (avec hiérarchie parent-enfant) et les unités de mesure comme sous-ressources du même service, et non comme modules distincts." }
+  },
+  "infra.tax_catalog": {
+    "en": { "name": "Country tax catalog (countries, rates, ID and document types)", "description": "The platform's fiscal source of truth: catalogs of countries, tax rates, identification types and document types. It belongs to no individual organization (it is platform data) and is partitioned by country_code; it publishes events that other services consume to build their own local read models." },
+    "fr": { "name": "Catalogue fiscal par pays (pays, taux, types d'identifiant et de document)", "description": "Source de vérité fiscale de la plateforme : catalogues de pays, taux de taxes, types d'identifiant et types de document. Il n'appartient à aucune organisation particulière (donnée de plateforme) et est partitionné par country_code ; il publie des événements que d'autres services consomment pour construire leurs propres modèles de lecture locaux." }
+  },
+  "admin.users_roles": {
+    "en": { "name": "User and role management", "description": "Role-based authentication and access control (RBAC): who can sign in, what role they have and what they can do inside the organization. It is the security foundation every other module relies on." },
+    "fr": { "name": "Gestion des utilisateurs et des rôles", "description": "Authentification et contrôle d'accès basé sur les rôles (RBAC) : qui peut se connecter, quel rôle il possède et ce qu'il peut faire au sein de l'organisation. C'est le socle de sécurité utilisé par tous les autres modules." }
+  },
+  "admin.multitenant": {
+    "en": { "name": "Multi-tenancy / organization profile", "description": "The mechanism that lets a single installation serve multiple organizations while keeping their data fully isolated, identifying every request by organization_id. It includes the basic tax profile (legal name, tax ID, country). The establishment and emission point structure was split out into the sellable module 'org.establishments'." },
+    "fr": { "name": "Multi-tenant / profil d'organisation", "description": "Mécanisme qui permet à une seule installation de servir plusieurs organisations tout en gardant leurs données parfaitement isolées, en identifiant chaque requête par organization_id. Il inclut le profil fiscal de base (raison sociale, numéro fiscal, pays). La structure des établissements et des points d'émission a été extraite dans le module vendable « org.establishments »." }
+  },
+  "admin.permissions": {
+    "en": { "name": "Granular permissions (RBAC)", "description": "A layer of granular permissions (e.g. 'organization:update', 'establishment:create') checked on every endpoint before an action runs, allowing different roles within the same organization to have different access." },
+    "fr": { "name": "Permissions granulaires (RBAC)", "description": "Couche de permissions granulaires (ex. « organization:update », « establishment:create ») vérifiée sur chaque point d'accès avant l'exécution d'une action, ce qui permet d'accorder des accès différents à des rôles différents au sein d'une même organisation." }
+  },
+
+  "admin.audit_log": {
+    "en": { "name": "Action audit log", "description": "Records who did what, on which resource and when (create, edit, delete) within the system, leaving an immutable history useful for investigating errors or improper access." },
+    "fr": { "name": "Journal d'audit des actions", "description": "Enregistre qui a fait quoi, sur quelle ressource et quand (création, modification, suppression) dans le système, en laissant un historique immuable utile pour enquêter sur des erreurs ou des accès indus." }
+  },
+  "admin.org_settings": {
+    "en": { "name": "General organization settings", "description": "Lets you configure general organization preferences beyond the tax profile: display name, time zone, default language, logo, and other settings that affect the experience of all its users." },
+    "fr": { "name": "Configuration générale de l'organisation", "description": "Permet de configurer les préférences générales de l'organisation au-delà du profil fiscal : nom affiché, fuseau horaire, langue par défaut, logo et autres réglages qui affectent l'expérience de tous ses utilisateurs." }
+  },
+  "admin.api_webhooks": {
+    "en": { "name": "API/webhook integrations", "description": "Lets the organization receive an automatic HTTP notification at its own URL when an event happens in the system (e.g. 'invoice.created'), or consume external APIs, to integrate with other tools without manual work." },
+    "fr": { "name": "Intégrations via API/webhooks", "description": "Permet à l'organisation de recevoir une notification HTTP automatique vers sa propre URL lorsqu'un événement survient dans le système (ex. « facture.créée »), ou de consommer des API externes, afin de s'intégrer à d'autres outils sans intervention manuelle." }
+  },
+  "org.establishments": {
+    "en": { "name": "Establishments and emission points", "description": "Manages the organization's physical locations (head office and branches) and the emission points of each one. In Ecuador every document's sequence number is built from the establishment code and the emission point code, which is why electronic invoicing requires it. A company operating without physical locations does not need this module." },
+    "fr": { "name": "Établissements et points d'émission", "description": "Gère les locaux physiques de l'organisation (siège et succursales) et les points d'émission de chacun. En Équateur, le numéro séquentiel de chaque document est composé du code de l'établissement et de celui du point d'émission, d'où l'exigence de la facturation électronique. Une entreprise sans locaux physiques n'a pas besoin de ce module." }
+  },
+
+  "crm.contacts": {
+    "en": { "name": "Contact and account management", "description": "Stores and manages the organization's customers: general data, associated contacts (purchasing, finance), billing/shipping addresses and segmentation tags (VIP, wholesale, overdue). It is the core of the 'pure CRM': who the customer is, not what you sell them." },
+    "fr": { "name": "Gestion des contacts et des comptes", "description": "Enregistre et gère les clients de l'organisation : données générales, contacts associés (achats, finances), adresses de facturation/livraison et étiquettes de segmentation (VIP, grossiste, en retard de paiement). C'est le cœur du « CRM pur » : qui est le client, et non ce qu'on lui vend." }
+  },
+  "crm.leads_pipeline": {
+    "en": { "name": "Leads and opportunities (pipeline)", "description": "Tracks sales prospects from first contact to close, organized into kanban-style pipeline stages: new lead, contacted, qualified, proposal, won or lost. It shows where in the sales funnel each opportunity stands so follow-up can be prioritized." },
+    "fr": { "name": "Prospects et opportunités (pipeline)", "description": "Suit les prospects commerciaux du premier contact à la conclusion, organisés en étapes de pipeline de type kanban : nouveau prospect, contacté, qualifié, proposition, gagné ou perdu. Il montre où en est chaque opportunité dans l'entonnoir commercial afin de prioriser le suivi." }
+  },
+  "crm.interaction_history": {
+    "en": { "name": "Interaction history", "description": "Chronologically records every call, email, meeting or note related to a customer or lead, so anyone on the team can see the full context before the next interaction." },
+    "fr": { "name": "Historique des interactions", "description": "Enregistre chronologiquement chaque appel, e-mail, réunion ou note lié à un client ou à un prospect, afin que n'importe quel membre de l'équipe puisse voir le contexte complet avant la prochaine interaction." }
+  },
+  "crm.support_tickets": {
+    "en": { "name": "After-sales support tickets", "description": "A ticket system for after-sales support requests: the customer reports a problem and it gets a status (open, in progress, resolved), an owner and a history of replies, with resolution-time metrics." },
+    "fr": { "name": "Tickets / support après-vente", "description": "Système de tickets pour les demandes de support après-vente : le client signale un problème, auquel sont attribués un statut (ouvert, en cours, résolu), un responsable et un historique de réponses, avec des indicateurs de délai de résolution." }
+  },
+  "crm.marketing_automation": {
+    "en": { "name": "Marketing automation / email marketing", "description": "Lets you build and send email/marketing campaigns segmented by customer tags or attributes (e.g. VIP customers only), and automate sequences such as a welcome email or an abandoned-cart reminder." },
+    "fr": { "name": "Automatisation marketing / e-mailing", "description": "Permet de créer et d'envoyer des campagnes d'e-mailing segmentées selon les étiquettes ou attributs des clients (ex. clients VIP uniquement), et d'automatiser des séquences comme l'e-mail de bienvenue ou le rappel de panier abandonné." }
+  },
+  "crm.quotes": {
+    "en": { "name": "Quotes and estimates", "description": "Generates formal quotes or estimates for a customer before the sale, pulling products and prices from the catalog. If the customer accepts, the quote can be turned straight into an order or invoice, with no need to retype anything." },
+    "fr": { "name": "Devis et estimations", "description": "Génère des devis ou estimations formels pour un client avant la vente, en reprenant les produits et prix du catalogue. Si le client accepte, le devis peut être converti directement en commande ou en facture, sans avoir à tout ressaisir." }
+  },
+  "crm.surveys": {
+    "en": { "name": "Satisfaction surveys (NPS, CSAT)", "description": "Sends satisfaction surveys (NPS: how likely you are to recommend us; CSAT: how satisfied you were) after a purchase or a closed ticket, and aggregates the results into a score per customer or per period." },
+    "fr": { "name": "Enquêtes de satisfaction (NPS, CSAT)", "description": "Envoie des enquêtes de satisfaction (NPS : quelle est la probabilité que vous nous recommandiez ; CSAT : à quel point êtes-vous satisfait) après un achat ou la clôture d'un ticket, et agrège les résultats en un score par client ou par période." }
+  },
+  "crm.customer_portal": {
+    "en": { "name": "Customer self-service portal", "description": "A site or section where customers can sign in to see their invoices, the status of their support tickets, their pending quotes and their purchase history, without anyone on the team having to serve them manually." },
+    "fr": { "name": "Portail libre-service pour les clients", "description": "Site ou section où le client peut se connecter pour consulter ses factures, l'état de ses tickets de support, ses devis en attente et son historique d'achats, sans qu'un membre de l'équipe ait à le prendre en charge manuellement." }
+  },
+
+  "finance.electronic_certificate": {
+    "en": { "name": "Digital certificate (.p12)", "description": "Upload and safekeeping of the organization's digital signing certificate (.p12), used to sign electronic documents (XAdES-BES). It is managed separately from invoicing because it has its own life cycle: expiry, renewal and replacement." },
+    "fr": { "name": "Certificat électronique (.p12)", "description": "Téléversement et conservation du certificat de signature numérique (.p12) de l'organisation, avec lequel les documents électroniques sont signés (XAdES-BES). Il est géré séparément de la facturation car il a son propre cycle de vie : expiration, renouvellement et remplacement." }
+  },
+  "finance.electronic_invoicing": {
+    "en": { "name": "Electronic invoicing", "description": "Generates electronic documents valid before the tax authority (in Ecuador, the SRI): it computes taxes, builds the XML, signs it digitally (XAdES-BES) with the company's .p12 certificate and manages the sequence number per emission point." },
+    "fr": { "name": "Facturation électronique", "description": "Génère des documents électroniques valides auprès de l'administration fiscale (en Équateur, le SRI) : elle calcule les taxes, construit le XML, le signe numériquement (XAdES-BES) avec le certificat .p12 de l'entreprise et gère le numéro séquentiel par point d'émission." }
+  },
+  "finance.multicurrency": {
+    "en": { "name": "Multi-currency", "description": "Lets you handle prices and transactions in different currencies, always storing the monetary value as an integer in the currency's smallest unit (cents) to avoid rounding errors in financial arithmetic." },
+    "fr": { "name": "Multidevise", "description": "Permet de gérer les prix et les transactions dans différentes devises, en stockant toujours la valeur monétaire sous forme d'entier dans la plus petite unité de la devise (centimes) afin d'éviter les erreurs d'arrondi dans les calculs financiers." }
+  },
+  "finance.accounts_receivable_payable": {
+    "en": { "name": "Accounts receivable / accounts payable", "description": "Tracks how much each customer owes the company (receivables) and how much the company owes its suppliers (payables), with due dates, partial payments and outstanding balance." },
+    "fr": { "name": "Comptes clients / comptes fournisseurs", "description": "Suit ce que chaque client doit à l'entreprise (créances) et ce que l'entreprise doit à ses fournisseurs (dettes), avec les échéances, les paiements partiels et le solde restant dû." }
+  },
+  "finance.general_ledger": {
+    "en": { "name": "General ledger (ledger and journal)", "description": "The general ledger and accounting journal: it records every economic movement as a double entry (debit/credit) against the company's chart of accounts, and is the basis for producing the financial statements." },
+    "fr": { "name": "Comptabilité générale (grand livre, journal)", "description": "Le grand livre et le journal comptable : chaque mouvement économique est enregistré en partie double (débit/crédit) sur le plan comptable de l'entreprise, ce qui sert de base à l'établissement des états financiers." }
+  },
+  "finance.bank_reconciliation": {
+    "en": { "name": "Bank reconciliation", "description": "Compares the movements recorded in the accounts against the actual bank statement, flagging differences (uncashed cheques, unrecorded bank fees) so both sides match." },
+    "fr": { "name": "Rapprochement bancaire", "description": "Compare les mouvements enregistrés en comptabilité au relevé bancaire réel, en signalant les écarts (chèques non encaissés, frais bancaires non comptabilisés) afin que les deux concordent." }
+  },
+  "finance.budgets": {
+    "en": { "name": "Budget management", "description": "Lets you define a budget per period and expense or income category, and compare in real time what was budgeted against what was actually spent or sold." },
+    "fr": { "name": "Gestion des budgets", "description": "Permet de définir un budget par période et par catégorie de dépense ou de recette, et de comparer en temps réel le budget prévu à ce qui a réellement été dépensé ou vendu." }
+  },
+  "finance.cash_flow": {
+    "en": { "name": "Cash flow", "description": "Shows projected and actual cash inflows and outflows over time, so you can anticipate whether the company will have enough liquidity in the coming weeks or months." },
+    "fr": { "name": "Flux de trésorerie", "description": "Affiche les entrées et sorties de trésorerie prévues et réelles au fil du temps, afin d'anticiper si l'entreprise disposera de liquidités suffisantes dans les semaines ou mois à venir." }
+  },
+  "finance.fixed_assets": {
+    "en": { "name": "Fixed assets and depreciation", "description": "Records the company's long-lived assets (machinery, vehicles, equipment) and automatically computes their periodic depreciation using the chosen accounting method." },
+    "fr": { "name": "Immobilisations et amortissement", "description": "Enregistre les actifs de longue durée de l'entreprise (machines, véhicules, équipements) et calcule automatiquement leur amortissement périodique selon la méthode comptable retenue." }
+  },
+  "finance.financial_reports": {
+    "en": { "name": "Financial reports (balance sheet, income statement)", "description": "Produces the formal financial statements (balance sheet, income statement) from the general ledger data, ready to present to an accountant, a bank or the tax authority." },
+    "fr": { "name": "Rapports financiers (bilan, compte de résultat)", "description": "Produit les états financiers formels (bilan, compte de résultat) à partir des données du grand livre, prêts à être présentés à un comptable, une banque ou l'administration fiscale." }
+  },
+
+  "inventory.warehouses": {
+    "en": { "name": "Multiple warehouse management", "description": "Manages one or more physical locations (warehouses) where inventory is kept, so you know which specific warehouse holds each unit of stock." },
+    "fr": { "name": "Gestion de plusieurs entrepôts", "description": "Gère un ou plusieurs emplacements physiques (entrepôts) où le stock est conservé, afin de savoir dans quel entrepôt précis se trouve chaque unité." }
+  },
+  "inventory.suppliers": {
+    "en": { "name": "Supplier management", "description": "Records the company's suppliers: contact details, the products they supply, payment terms and usual delivery lead times." },
+    "fr": { "name": "Gestion des fournisseurs", "description": "Enregistre les fournisseurs de l'entreprise : coordonnées, produits fournis, conditions de paiement et délais de livraison habituels." }
+  },
+  "inventory.kardex": {
+    "en": { "name": "Stock control / Kardex (FIFO, LIFO, WAC)", "description": "Keeps a detailed record of every product's inflows and outflows and computes inventory cost using a chosen method (FIFO: first in, first out; LIFO: last in, first out; or WAC: weighted average cost), giving the exact cost of goods sold and the value of remaining inventory." },
+    "fr": { "name": "Contrôle des stocks / Kardex (FIFO, LIFO, CMP)", "description": "Tient le registre détaillé des entrées et sorties de chaque produit et calcule le coût du stock selon une méthode définie (FIFO : premier entré, premier sorti ; LIFO : dernier entré, premier sorti ; ou CMP : coût moyen pondéré), donnant le coût exact des marchandises vendues et la valeur du stock restant." }
+  },
+  "inventory.purchase_orders": {
+    "en": { "name": "Purchase orders (inventory view)", "description": "An inventory-side view of purchase orders: what goods are expected, which warehouse they will arrive at and when, so space and cash flow can be planned." },
+    "fr": { "name": "Bons de commande (vue inventaire)", "description": "Vue côté inventaire des bons de commande : quelles marchandises sont attendues, dans quel entrepôt elles arriveront et quand, afin de planifier l'espace et la trésorerie." }
+  },
+  "inventory.warehouse_transfers": {
+    "en": { "name": "Transfers between warehouses", "description": "Records stock movement from one warehouse to another, deducting from the source and adding to the destination, keeping traceability of where each unit is." },
+    "fr": { "name": "Transferts entre entrepôts", "description": "Enregistre le mouvement de stock d'un entrepôt à un autre, en déduisant de l'entrepôt d'origine et en ajoutant à celui de destination, tout en conservant la traçabilité de chaque unité." }
+  },
+  "inventory.lot_tracking": {
+    "en": { "name": "Lot/serial traceability", "description": "Ties each stock unit to a specific lot or serial number, making it possible to trace where it came from (supplier, manufacturing or expiry date) and who it was sold to — key for product recalls or warranties." },
+    "fr": { "name": "Traçabilité des lots/numéros de série", "description": "Associe chaque unité de stock à un lot ou numéro de série précis, ce qui permet de retracer sa provenance (fournisseur, date de fabrication ou de péremption) et son acheteur — essentiel pour les rappels de produits ou les garanties." }
+  },
+  "inventory.reorder_alerts": {
+    "en": { "name": "Reorder alerts", "description": "Raises an automatic alert when a product's stock falls below a defined minimum threshold, so a purchase order can be placed before running out." },
+    "fr": { "name": "Alertes de réapprovisionnement", "description": "Déclenche une alerte automatique lorsque le stock d'un produit passe sous un seuil minimal défini, afin de passer une commande avant la rupture." }
+  },
+
+  "pos.core": {
+    "en": { "name": "Point of Sale (POS)", "description": "A point-of-sale application for fast counter sales: find a product (by name, SKU or barcode), compute the total with taxes and discounts, and close the sale — working even without an internet connection thanks to a local database (MySQL via Prisma) that later syncs with the central system." },
+    "fr": { "name": "Point de vente (PDV)", "description": "Application de point de vente permettant d'enregistrer rapidement les ventes au comptoir : rechercher un produit (par nom, SKU ou code-barres), calculer le total avec taxes et remises, puis clôturer la vente — même sans connexion Internet, grâce à une base de données locale (MySQL via Prisma) synchronisée ensuite avec le système central." }
+  },
+  "pos.cash_sessions": {
+    "en": { "name": "Cash register and shift management", "description": "Controls opening and closing the register per shift: the cashier records the starting cash amount, the system computes the expected amount from the shift's sales, and on closing it is compared against the real counted amount, leaving evidence of any difference (over or short)." },
+    "fr": { "name": "Gestion des caisses et des services", "description": "Contrôle l'ouverture et la clôture de caisse par service : le caissier saisit le fonds de caisse initial, le système calcule le montant attendu d'après les ventes du service, et à la clôture il est comparé au montant réellement compté, en conservant la trace de tout écart (excédent ou manquant)." }
+  },
+  "pos.payment_methods": {
+    "en": { "name": "Multiple payment methods", "description": "Lets each sale be recorded with a specific payment method (cash, card, transfer or other), even splitting a single sale across several methods when the customer pays with a combination." },
+    "fr": { "name": "Modes de paiement multiples", "description": "Permet d'enregistrer chaque vente avec un mode de paiement précis (espèces, carte, virement ou autre), et même de répartir une même vente sur plusieurs modes lorsque le client paie de façon combinée." }
+  },
+  "pos.offline_sync": {
+    "en": { "name": "Offline/online synchronization", "description": "The sync engine that lets the POS work without internet: sales are stored locally and flagged as unsynced until there is a connection, at which point they are uploaded to the central system; products and prices are pulled from the admin down to the POS." },
+    "fr": { "name": "Synchronisation hors ligne/en ligne", "description": "Moteur de synchronisation qui permet au PDV de fonctionner sans Internet : les ventes sont enregistrées localement et marquées comme non synchronisées jusqu'au retour de la connexion, moment où elles sont envoyées au système central ; les produits et les prix sont récupérés depuis l'administration vers le PDV." }
+  },
+  "pos.discounts_promotions": {
+    "en": { "name": "Discounts and promotions", "description": "Lets you apply a discount to a whole sale or to an individual product at checkout, computed before the final total." },
+    "fr": { "name": "Remises et promotions", "description": "Permet d'appliquer une remise sur l'ensemble de la vente ou sur un produit précis au moment de l'encaissement, calculée avant le total final." }
+  },
+
+  "hr.employees": {
+    "en": { "name": "Employee management (personnel files)", "description": "The central record of every employee in the organization: personal data, job title, start date, base salary and associated documents — each worker's digital personnel file." },
+    "fr": { "name": "Gestion des employés (dossiers du personnel)", "description": "Registre central de chaque employé de l'organisation : données personnelles, poste, date d'entrée, salaire de base et documents associés — le dossier numérique de chaque salarié." }
+  },
+  "hr.attendance": {
+    "en": { "name": "Attendance and clock-ins", "description": "Records each employee's clock-in and clock-out times, allowing hours worked, lateness and absences to be computed as the basis for payroll." },
+    "fr": { "name": "Présence et pointages", "description": "Enregistre les heures d'arrivée et de départ de chaque employé (pointages), ce qui permet de calculer les heures travaillées, les retards et les absences comme base de la paie." }
+  },
+  "hr.leave_management": {
+    "en": { "name": "Holiday and leave management", "description": "Handles employees' holiday and leave requests: how many days they have left, the request itself, approval by a manager, and automatic deduction from the balance once approved." },
+    "fr": { "name": "Gestion des congés et absences", "description": "Gère les demandes de congés et d'absences des employés : jours disponibles, demande, validation par un responsable et déduction automatique du solde une fois approuvée." }
+  },
+  "hr.performance_review": {
+    "en": { "name": "Performance review", "description": "Lets you record periodic performance reviews for each employee, with defined criteria, scores and reviewer comments, to follow their development over time." },
+    "fr": { "name": "Évaluation des performances", "description": "Permet d'enregistrer des évaluations périodiques des performances de chaque employé, avec des critères définis, des notes et les commentaires de l'évaluateur, afin de suivre son évolution." }
+  },
+  "hr.recruitment": {
+    "en": { "name": "Recruitment and selection", "description": "Manages the hiring process: post a vacancy, receive applications, move candidates through stages (interview, technical test, offer) up to the final hire." },
+    "fr": { "name": "Recrutement et sélection", "description": "Gère le processus d'embauche : publier une offre, recevoir les candidatures, faire progresser les candidats par étapes (entretien, test technique, offre) jusqu'à l'embauche finale." }
+  },
+  "hr.payroll": {
+    "en": { "name": "Payroll and payslips", "description": "Automatically computes each employee's periodic pay from their base salary, recorded attendance hours, deductions (e.g. social security) and bonuses, producing the payslip and its accounting entry in the general ledger." },
+    "fr": { "name": "Paie et bulletins de salaire", "description": "Calcule automatiquement la rémunération périodique de chaque employé à partir de son salaire de base, des heures de présence enregistrées, des retenues (ex. sécurité sociale) et des primes, en générant le bulletin de paie et son écriture comptable au grand livre." }
+  },
+
+  "production.bom": {
+    "en": { "name": "Bill of materials (BOM)", "description": "Defines the manufacturing recipe for a finished product: which raw materials, and in what quantity, are needed to produce one unit (Bill of Materials)." },
+    "fr": { "name": "Nomenclature (BOM)", "description": "Définit la recette de fabrication d'un produit fini : quelles matières premières, et en quelle quantité, sont nécessaires pour produire une unité (Bill of Materials)." }
+  },
+  "production.orders": {
+    "en": { "name": "Production orders", "description": "The document that authorizes manufacturing a specific quantity of a product on a given date, automatically deducting the raw materials from inventory according to the BOM and adding the finished product on completion." },
+    "fr": { "name": "Ordres de fabrication", "description": "Document autorisant la fabrication d'une quantité précise d'un produit à une date donnée, déduisant automatiquement les matières premières du stock selon la nomenclature et ajoutant le produit fini à l'achèvement." }
+  },
+  "production.quality_control": {
+    "en": { "name": "Quality control", "description": "Records quality inspections on what has been produced (approved, rejected or to be reworked), with criteria and remarks, before the product moves into inventory available for sale." },
+    "fr": { "name": "Contrôle qualité", "description": "Enregistre les inspections qualité sur ce qui a été produit (accepté, rejeté ou à retraiter), avec critères et observations, avant que le produit ne rejoigne le stock disponible à la vente." }
+  },
+  "production.maintenance": {
+    "en": { "name": "Machinery maintenance", "description": "Schedules and records preventive and corrective maintenance of the machinery used in production, to avoid unplanned downtime." },
+    "fr": { "name": "Maintenance des machines", "description": "Planifie et enregistre la maintenance préventive et corrective des machines utilisées en production, afin d'éviter les arrêts non planifiés." }
+  },
+  "production.mrp": {
+    "en": { "name": "Material requirements planning (MRP)", "description": "Material Requirements Planning: it cross-checks planned production orders against current inventory and automatically suggests what and how much to buy, and by when, so you never run out of raw materials." },
+    "fr": { "name": "Planification des besoins en composants (MRP)", "description": "Material Requirements Planning : croise les ordres de fabrication prévus avec le stock actuel et suggère automatiquement quoi acheter, en quelle quantité et pour quand, afin de ne jamais manquer de matières premières." }
+  },
+
+  "projects.tasks_kanban": {
+    "en": { "name": "Task management (kanban/gantt)", "description": "Organizes a project's work into tasks shown on a kanban board (to do, in progress, done) or on a timeline (gantt), with owners and due dates." },
+    "fr": { "name": "Gestion des tâches (kanban/gantt)", "description": "Organise le travail d'un projet en tâches visualisées sur un tableau kanban (à faire, en cours, terminé) ou sur une ligne de temps (gantt), avec responsables et échéances." }
+  },
+  "projects.time_tracking": {
+    "en": { "name": "Time tracking", "description": "Lets each team member record how many hours they spent on a specific task or project — the basis for measuring productivity or billing hours to a client." },
+    "fr": { "name": "Suivi du temps", "description": "Permet à chaque membre de l'équipe d'enregistrer le nombre d'heures consacrées à une tâche ou à un projet précis, base pour mesurer la productivité ou facturer des heures à un client." }
+  },
+  "projects.resource_allocation": {
+    "en": { "name": "Resource allocation", "description": "Assigns team members to specific tasks or projects, tracking their total workload to avoid over-allocation." },
+    "fr": { "name": "Affectation des ressources", "description": "Affecte des membres de l'équipe à des tâches ou projets précis, en contrôlant leur charge de travail totale pour éviter la surcharge." }
+  },
+  "projects.project_billing": {
+    "en": { "name": "Project billing", "description": "Generates a customer invoice based on the hours logged on a project (time-and-materials billing) or on completed milestones, connecting actual work to what gets charged." },
+    "fr": { "name": "Facturation par projet", "description": "Génère une facture client à partir des heures enregistrées sur un projet (facturation au temps passé) ou des jalons atteints, reliant le travail réel à la facturation." }
+  },
+
+  "purchasing.requests": {
+    "en": { "name": "Purchase requests", "description": "An internal form where any department requests the purchase of something (raw materials, supplies, assets), which then goes through approval before becoming a real purchase order." },
+    "fr": { "name": "Demandes d'achat", "description": "Formulaire interne par lequel n'importe quel service demande l'achat de quelque chose (matières premières, fournitures, actifs), soumis ensuite à validation avant de devenir un véritable bon de commande." }
+  },
+  "purchasing.supplier_evaluation": {
+    "en": { "name": "Supplier evaluation", "description": "Rates suppliers on criteria such as on-time delivery, product quality and price, to decide which ones to keep working with." },
+    "fr": { "name": "Évaluation des fournisseurs", "description": "Note les fournisseurs selon des critères tels que le respect des délais de livraison, la qualité des produits et le prix, afin de décider avec lesquels continuer à travailler." }
+  },
+  "purchasing.quote_comparison": {
+    "en": { "name": "Quote comparison", "description": "Lets you request quotes from several suppliers for the same purchasing need and compare them side by side (price, lead time, terms) before deciding who to buy from." },
+    "fr": { "name": "Comparaison des devis", "description": "Permet de demander des devis à plusieurs fournisseurs pour un même besoin d'achat et de les comparer côte à côte (prix, délai de livraison, conditions) avant de choisir." }
+  },
+  "purchasing.purchase_orders": {
+    "en": { "name": "Purchase orders", "description": "The formal document sent to a supplier confirming what is being bought, the quantity, the agreed price and the expected delivery date; when the goods arrive, it updates inventory automatically." },
+    "fr": { "name": "Bons de commande", "description": "Document formel envoyé à un fournisseur confirmant ce qui est acheté, la quantité, le prix convenu et la date de livraison prévue ; à la réception de la marchandise, le stock est mis à jour automatiquement." }
+  },
+
+  "bi.dashboards": {
+    "en": { "name": "Executive dashboards", "description": "A visual panel with the business's most important metrics (sales this month, low stock, overdue receivables) in one place, updated in real time, so a manager does not have to check each module separately." },
+    "fr": { "name": "Tableaux de bord de direction", "description": "Panneau visuel réunissant les indicateurs les plus importants de l'activité (ventes du mois, stock bas, créances échues) au même endroit, mis à jour en temps réel, pour qu'un dirigeant n'ait pas à parcourir chaque module séparément." }
+  },
+  "bi.kpis": {
+    "en": { "name": "Customizable KPIs", "description": "Lets you define custom key performance indicators (e.g. average sale ticket, inventory turnover) with a target and a current value, to measure how the business is doing against a goal." },
+    "fr": { "name": "Indicateurs personnalisables", "description": "Permet de définir des indicateurs clés de performance sur mesure (ex. panier moyen, rotation des stocks) avec un objectif et une valeur actuelle, afin de mesurer la performance de l'activité par rapport à une cible." }
+  },
+  "bi.exports": {
+    "en": { "name": "Exportable reports (Excel, PDF)", "description": "Produces reports from any module (sales, inventory, accounting) in Excel or PDF format, ready to share or print outside the system." },
+    "fr": { "name": "Rapports exportables (Excel, PDF)", "description": "Génère des rapports depuis n'importe quel module (ventes, stock, comptabilité) au format Excel ou PDF, prêts à être partagés ou imprimés hors du système." }
+  },
+  "bi.predictive_analytics": {
+    "en": { "name": "Predictive analytics", "description": "Uses historical data (past sales, seasonality) to project future trends, such as estimating next month's sales or when a product will run out of stock." },
+    "fr": { "name": "Analyse prédictive", "description": "Utilise les données historiques (ventes passées, saisonnalité) pour projeter les tendances futures, par exemple estimer les ventes du mois prochain ou la date de rupture de stock d'un produit." }
+  },
+
+  "comm.notifications": {
+    "en": { "name": "Push/email notifications", "description": "Sends automatic notices to users by email or push notification when a relevant event happens (new invoice, ticket assigned, low stock), using templates predefined per event type." },
+    "fr": { "name": "Notifications push/e-mail", "description": "Envoie des avis automatiques aux utilisateurs par e-mail ou notification push lorsqu'un événement pertinent survient (nouvelle facture, ticket assigné, stock bas), à partir de modèles prédéfinis par type d'événement." }
+  },
+  "comm.internal_chat": {
+    "en": { "name": "Internal chat", "description": "A real-time messaging channel between team members within the same organization, for quick coordination without leaving the system." },
+    "fr": { "name": "Messagerie interne", "description": "Canal de messagerie en temps réel entre les membres de l'équipe d'une même organisation, pour se coordonner rapidement sans quitter le système." }
+  },
+  "comm.shared_calendar": {
+    "en": { "name": "Shared calendar", "description": "A shared calendar where the team can see and coordinate meetings, deliveries or deadlines for projects and tasks." },
+    "fr": { "name": "Calendrier partagé", "description": "Calendrier partagé où l'équipe peut consulter et coordonner réunions, livraisons ou échéances de projets et de tâches." }
+  },
+  "comm.shared_documents": {
+    "en": { "name": "Shared documents (base)", "description": "The system's central repository of attached files (images, PDFs, document XMLs) where any entity (a customer, a product, an invoice) can have files associated with it generically and polymorphically." },
+    "fr": { "name": "Documents partagés (base)", "description": "Dépôt central des fichiers joints du système (images, PDF, XML de documents) où n'importe quelle entité (un client, un produit, une facture) peut avoir des fichiers associés de façon générique et polymorphe." }
+  },
+
+  "ecommerce.online_catalog": {
+    "en": { "name": "Online product catalog", "description": "Exposes the organization's product catalog in a public web store, with photos, prices and descriptions, so any visitor can browse it without signing in." },
+    "fr": { "name": "Catalogue de produits en ligne", "description": "Expose le catalogue de produits de l'organisation dans une boutique web publique, avec photos, prix et descriptions, afin que tout visiteur puisse le consulter sans se connecter." }
+  },
+  "ecommerce.cart": {
+    "en": { "name": "Shopping cart", "description": "Lets a visitor to the online store add products to a cart before deciding to buy, computing the subtotal in real time." },
+    "fr": { "name": "Panier d'achat", "description": "Permet à un visiteur de la boutique en ligne d'ajouter des produits à un panier avant de décider d'acheter, en calculant le sous-total en temps réel." }
+  },
+  "ecommerce.payment_gateways": {
+    "en": { "name": "Payment gateways", "description": "Connects the online store's checkout to external payment processors (card, PayPal, transfer) to charge for the purchase and confirm payment before dispatch." },
+    "fr": { "name": "Passerelles de paiement", "description": "Connecte le paiement de la boutique en ligne à des processeurs externes (carte, PayPal, virement) pour encaisser l'achat et confirmer le paiement avant l'expédition." }
+  },
+  "ecommerce.shipping": {
+    "en": { "name": "Shipping management", "description": "Computes shipping costs by destination and weight, generates the dispatch note and lets you track the order's status until it reaches the customer." },
+    "fr": { "name": "Gestion des expéditions", "description": "Calcule les frais de port selon la destination et le poids, génère le bon d'expédition et permet de suivre l'état de la commande jusqu'à sa réception par le client." }
+  }
+}
