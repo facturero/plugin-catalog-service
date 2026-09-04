@@ -13,7 +13,7 @@ import { ListMyCustomRequestsUseCase } from './application/use-cases/list-my-cus
 import { FulfillCustomPluginRequestUseCase } from './application/use-cases/fulfill-custom-plugin-request';
 import { RejectCustomPluginRequestUseCase } from './application/use-cases/reject-custom-plugin-request';
 import { createApp } from './interface/http/app';
-import { OutboxRelay } from './infrastructure/messaging/relay';
+import { OutboxRelay } from '@facturero/outbox-relay';
 
 async function bootstrap(): Promise<void> {
   await sequelize.authenticate();
@@ -56,8 +56,12 @@ async function bootstrap(): Promise<void> {
   });
 
   if (config.RABBITMQ_URL) {
-    new OutboxRelay()
-      .start(config.RABBITMQ_URL)
+    new OutboxRelay({
+      sequelize,
+      rabbitmqUrl: config.RABBITMQ_URL,
+      exchange: 'crm.events',
+    })
+      .start()
       .then(() => console.log('[plugin-catalog-service] Outbox relay conectado a RabbitMQ.'))
       .catch((err) => console.error('[plugin-catalog-service] No se pudo iniciar el outbox relay:', err));
   }
