@@ -8,7 +8,15 @@ import { RequestCustomPluginUseCase } from '../../application/use-cases/request-
 import { ListMyCustomRequestsUseCase } from '../../application/use-cases/list-my-custom-requests';
 import { FulfillCustomPluginRequestUseCase } from '../../application/use-cases/fulfill-custom-plugin-request';
 import { RejectCustomPluginRequestUseCase } from '../../application/use-cases/reject-custom-plugin-request';
+import { ListBusinessProfilesUseCase } from '../../application/use-cases/list-business-profiles';
+import { GetMyBusinessProfileUseCase } from '../../application/use-cases/get-my-business-profile';
+import { ChooseBusinessProfileUseCase } from '../../application/use-cases/choose-business-profile';
+import { GetBusinessProfileRecommendationsUseCase } from '../../application/use-cases/get-business-profile-recommendations';
+import { ActivatePluginsBatchUseCase } from '../../application/use-cases/activate-plugins-batch';
 import {
+  activatePluginsBatchSchema,
+  businessProfileCodeParamSchema,
+  chooseBusinessProfileSchema,
   fulfillCustomRequestSchema,
   pluginCodeParamSchema,
   rejectCustomRequestSchema,
@@ -19,11 +27,16 @@ import {
 } from './validators';
 import {
   activatePluginController,
+  activatePluginsBatchController,
+  chooseBusinessProfileController,
   deactivatePluginController,
   fulfillCustomRequestController,
+  getBusinessProfileRecommendationsController,
   getCatalogController,
+  getMyBusinessProfileController,
   getOrganizationPluginsController,
   getPublicCatalogController,
+  listBusinessProfilesController,
   listMyCustomRequestsController,
   quoteController,
   rejectCustomRequestController,
@@ -44,6 +57,11 @@ export interface AppDependencies {
     listMyCustomRequests: ListMyCustomRequestsUseCase;
     fulfillCustomRequest: FulfillCustomPluginRequestUseCase;
     rejectCustomRequest: RejectCustomPluginRequestUseCase;
+    listBusinessProfiles: ListBusinessProfilesUseCase;
+    getMyBusinessProfile: GetMyBusinessProfileUseCase;
+    chooseBusinessProfile: ChooseBusinessProfileUseCase;
+    getBusinessProfileRecommendations: GetBusinessProfileRecommendationsUseCase;
+    activatePluginsBatch: ActivatePluginsBatchUseCase;
   };
   corsOrigin: string;
 }
@@ -58,6 +76,7 @@ export function healthRoutes(): Hono {
 export function publicRoutes(deps: AppDependencies): Hono {
   const r = new Hono();
   r.get('/plugins', getPublicCatalogController(deps.useCases.getCatalog));
+  r.get('/business-profiles', listBusinessProfilesController(deps.useCases.listBusinessProfiles));
   return r;
 }
 
@@ -100,6 +119,28 @@ export function organizationRoutes(deps: AppDependencies): Hono<Vars> {
     requirePermission('plugins:manage'),
     validateParams(pluginCodeParamSchema),
     deactivatePluginController(useCases.deactivatePlugin));
+
+  // Perfiles de negocio (recomendación de plugins)
+  r.get('/organizations/me/business-profile',
+    requireOrganization(),
+    getMyBusinessProfileController(useCases.getMyBusinessProfile));
+
+  r.put('/organizations/me/business-profile',
+    requireOrganization(),
+    requirePermission('plugins:manage'),
+    validateJson(chooseBusinessProfileSchema),
+    chooseBusinessProfileController(useCases.chooseBusinessProfile));
+
+  r.get('/organizations/me/business-profiles/:code/recommendations',
+    requireOrganization(),
+    validateParams(businessProfileCodeParamSchema),
+    getBusinessProfileRecommendationsController(useCases.getBusinessProfileRecommendations));
+
+  r.post('/organizations/me/plugins/activate',
+    requireOrganization(),
+    requirePermission('plugins:manage'),
+    validateJson(activatePluginsBatchSchema),
+    activatePluginsBatchController(useCases.activatePluginsBatch));
 
   return r;
 }

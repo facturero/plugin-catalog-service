@@ -1,4 +1,7 @@
-import { Plugin, PluginDependency, OrganizationPlugin, PluginCustomRequest } from './entities';
+import {
+  Plugin, PluginDependency, OrganizationPlugin, PluginCustomRequest,
+  BusinessProfile, BusinessProfilePlugin, OrganizationBusinessProfile,
+} from './entities';
 
 export interface DomainEvent {
   type: string;
@@ -62,6 +65,25 @@ export interface OutboxRepository {
   add(event: DomainEvent): Promise<void>;
 }
 
+export interface BusinessProfileTranslation {
+  businessProfileId: string;
+  name: string;
+  description: string;
+}
+
+export interface BusinessProfileRepository {
+  listActive(): Promise<BusinessProfile[]>;
+  findById(id: string): Promise<BusinessProfile | null>;
+  findByCode(code: string): Promise<BusinessProfile | null>;
+  findPlugins(profileId: string): Promise<BusinessProfilePlugin[]>;
+  findTranslation(profileId: string, locale: string): Promise<BusinessProfileTranslation | null>;
+}
+
+export interface OrganizationBusinessProfileRepository {
+  find(organizationId: string): Promise<OrganizationBusinessProfile | null>;
+  upsert(obp: OrganizationBusinessProfile): Promise<void>;
+}
+
 export interface Repositories {
   plugins: PluginRepository;
   translations: PluginTranslationRepository;
@@ -69,4 +91,6 @@ export interface Repositories {
   organizationPlugins: OrganizationPluginRepository;
   customRequests: PluginCustomRequestRepository;
   outbox: OutboxRepository;
+  businessProfiles: BusinessProfileRepository;
+  organizationBusinessProfiles: OrganizationBusinessProfileRepository;
 }

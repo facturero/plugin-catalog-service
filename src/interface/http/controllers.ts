@@ -8,6 +8,11 @@ import { RequestCustomPluginUseCase } from '../../application/use-cases/request-
 import { ListMyCustomRequestsUseCase } from '../../application/use-cases/list-my-custom-requests';
 import { FulfillCustomPluginRequestUseCase } from '../../application/use-cases/fulfill-custom-plugin-request';
 import { RejectCustomPluginRequestUseCase } from '../../application/use-cases/reject-custom-plugin-request';
+import { ListBusinessProfilesUseCase } from '../../application/use-cases/list-business-profiles';
+import { GetMyBusinessProfileUseCase } from '../../application/use-cases/get-my-business-profile';
+import { ChooseBusinessProfileUseCase } from '../../application/use-cases/choose-business-profile';
+import { GetBusinessProfileRecommendationsUseCase } from '../../application/use-cases/get-business-profile-recommendations';
+import { ActivatePluginsBatchUseCase } from '../../application/use-cases/activate-plugins-batch';
 import { ContextVariables } from './middlewares';
 
 type Ctx = Context<{ Variables: ContextVariables }>;
@@ -113,6 +118,54 @@ export function rejectCustomRequestController(useCase: RejectCustomPluginRequest
     const { id } = c.req.valid('param' as never) as { id: string };
     const body = c.req.valid('json' as never) as { reason: string };
     const result = await useCase.execute(id, body.reason);
+    return c.json(result, 200);
+  };
+}
+
+export function listBusinessProfilesController(useCase: ListBusinessProfilesUseCase) {
+  return async (c: Ctx) => {
+    const result = await useCase.execute(c.get('locale'));
+    return c.json(result, 200);
+  };
+}
+
+export function getMyBusinessProfileController(useCase: GetMyBusinessProfileUseCase) {
+  return async (c: Ctx) => {
+    const orgId = c.get('organizationId');
+    const result = await useCase.execute(orgId, c.get('locale'));
+    return c.json(result, 200);
+  };
+}
+
+export function chooseBusinessProfileController(useCase: ChooseBusinessProfileUseCase) {
+  return async (c: Ctx) => {
+    const orgId = c.get('organizationId');
+    const userId = c.get('userId');
+    const body = c.req.valid('json' as never) as { code?: string | null; source?: 'onboarding' | 'settings' };
+    const result = await useCase.execute({
+      organizationId: orgId,
+      userId,
+      code: body.code ?? null,
+      source: body.source ?? 'onboarding',
+    });
+    return c.json(result, 200);
+  };
+}
+
+export function getBusinessProfileRecommendationsController(useCase: GetBusinessProfileRecommendationsUseCase) {
+  return async (c: Ctx) => {
+    const orgId = c.get('organizationId');
+    const { code } = c.req.valid('param' as never) as { code: string };
+    const result = await useCase.execute(orgId, code, c.get('locale'));
+    return c.json(result, 200);
+  };
+}
+
+export function activatePluginsBatchController(useCase: ActivatePluginsBatchUseCase) {
+  return async (c: Ctx) => {
+    const orgId = c.get('organizationId');
+    const body = c.req.valid('json' as never) as { codes: string[] };
+    const result = await useCase.execute(orgId, body.codes);
     return c.json(result, 200);
   };
 }

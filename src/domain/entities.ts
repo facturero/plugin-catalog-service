@@ -1,6 +1,9 @@
 import { randomUUID } from 'node:crypto';
 import { InvalidCustomRequestStateError } from './errors';
 
+export type BusinessProfilePluginRecommendation = 'essential' | 'suggested';
+export type OrganizationProfileStatus = 'selected' | 'skipped';
+
 export type BuildStatus = 'disponible' | 'en_construccion' | 'descontinuado';
 export type ActivationSource = 'direct' | 'dependency';
 export type OrganizationPluginStatus = 'active' | 'disabled';
@@ -283,6 +286,165 @@ export class PluginCustomRequest {
   }
 
   toPersistence(): PluginCustomRequestProps {
+    return { ...this.props };
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Business Profiles
+// ---------------------------------------------------------------------------
+
+export interface BusinessProfileProps {
+  id: string;
+  code: string;
+  name: string;
+  description: string;
+  icon: string;
+  sortOrder: number;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export class BusinessProfile {
+  private constructor(private props: BusinessProfileProps) {}
+
+  static create(params: {
+    code: string;
+    name: string;
+    description: string;
+    icon?: string;
+    sortOrder?: number;
+    isActive?: boolean;
+  }): BusinessProfile {
+    const now = new Date();
+    return new BusinessProfile({
+      id: randomUUID(),
+      code: params.code,
+      name: params.name,
+      description: params.description,
+      icon: params.icon ?? 'mdi-storefront-outline',
+      sortOrder: params.sortOrder ?? 0,
+      isActive: params.isActive ?? true,
+      createdAt: now,
+      updatedAt: now,
+    });
+  }
+
+  static fromPersistence(props: BusinessProfileProps): BusinessProfile {
+    return new BusinessProfile({ ...props });
+  }
+
+  get id(): string { return this.props.id; }
+  get code(): string { return this.props.code; }
+  get name(): string { return this.props.name; }
+  get description(): string { return this.props.description; }
+  get icon(): string { return this.props.icon; }
+  get sortOrder(): number { return this.props.sortOrder; }
+  get isActive(): boolean { return this.props.isActive; }
+  get createdAt(): Date { return this.props.createdAt; }
+  get updatedAt(): Date { return this.props.updatedAt; }
+
+  toPersistence(): BusinessProfileProps {
+    return { ...this.props };
+  }
+}
+
+export interface BusinessProfilePluginProps {
+  businessProfileId: string;
+  pluginId: string;
+  recommendation: BusinessProfilePluginRecommendation;
+  sortOrder: number;
+}
+
+export class BusinessProfilePlugin {
+  private constructor(private props: BusinessProfilePluginProps) {}
+
+  static create(params: {
+    businessProfileId: string;
+    pluginId: string;
+    recommendation: BusinessProfilePluginRecommendation;
+    sortOrder?: number;
+  }): BusinessProfilePlugin {
+    return new BusinessProfilePlugin({
+      businessProfileId: params.businessProfileId,
+      pluginId: params.pluginId,
+      recommendation: params.recommendation,
+      sortOrder: params.sortOrder ?? 0,
+    });
+  }
+
+  static fromPersistence(props: BusinessProfilePluginProps): BusinessProfilePlugin {
+    return new BusinessProfilePlugin({ ...props });
+  }
+
+  get businessProfileId(): string { return this.props.businessProfileId; }
+  get pluginId(): string { return this.props.pluginId; }
+  get recommendation(): BusinessProfilePluginRecommendation { return this.props.recommendation; }
+  get sortOrder(): number { return this.props.sortOrder; }
+  get isEssential(): boolean { return this.props.recommendation === 'essential'; }
+
+  toPersistence(): BusinessProfilePluginProps {
+    return { ...this.props };
+  }
+}
+
+export interface OrganizationBusinessProfileProps {
+  organizationId: string;
+  businessProfileId: string | null;
+  status: OrganizationProfileStatus;
+  decidedByUserId: string | null;
+  decidedAt: Date;
+  updatedAt: Date;
+}
+
+export class OrganizationBusinessProfile {
+  private constructor(private props: OrganizationBusinessProfileProps) {}
+
+  static choose(
+    organizationId: string,
+    profileId: string,
+    userId: string,
+  ): OrganizationBusinessProfile {
+    const now = new Date();
+    return new OrganizationBusinessProfile({
+      organizationId,
+      businessProfileId: profileId,
+      status: 'selected',
+      decidedByUserId: userId,
+      decidedAt: now,
+      updatedAt: now,
+    });
+  }
+
+  static skip(organizationId: string, userId: string): OrganizationBusinessProfile {
+    const now = new Date();
+    return new OrganizationBusinessProfile({
+      organizationId,
+      businessProfileId: null,
+      status: 'skipped',
+      decidedByUserId: userId,
+      decidedAt: now,
+      updatedAt: now,
+    });
+  }
+
+  static fromPersistence(props: OrganizationBusinessProfileProps): OrganizationBusinessProfile {
+    return new OrganizationBusinessProfile({ ...props });
+  }
+
+  get organizationId(): string { return this.props.organizationId; }
+  get businessProfileId(): string | null { return this.props.businessProfileId; }
+  get status(): OrganizationProfileStatus { return this.props.status; }
+  get decidedByUserId(): string | null { return this.props.decidedByUserId; }
+  get decidedAt(): Date { return this.props.decidedAt; }
+  get updatedAt(): Date { return this.props.updatedAt; }
+
+  get isPending(): boolean { return this.props.businessProfileId === null && this.props.status === 'selected'; }
+  get hasProfile(): boolean { return this.props.status === 'selected' && this.props.businessProfileId !== null; }
+  get wasSkipped(): boolean { return this.props.status === 'skipped'; }
+
+  toPersistence(): OrganizationBusinessProfileProps {
     return { ...this.props };
   }
 }

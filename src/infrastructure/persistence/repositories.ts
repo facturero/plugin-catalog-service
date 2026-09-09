@@ -2,6 +2,10 @@ import { randomUUID } from 'node:crypto';
 import { Op, Transaction } from 'sequelize';
 import { sequelize } from './sequelize';
 import {
+  BusinessProfileModel,
+  BusinessProfilePluginModel,
+  BusinessProfileTranslationModel,
+  OrganizationBusinessProfileModel,
   OrganizationPluginModel,
   OutboxModel,
   PluginCustomRequestModel,
@@ -10,12 +14,14 @@ import {
   PluginModel,
 } from './models';
 import {
+  BusinessProfile,
+  BusinessProfilePlugin,
+  OrganizationBusinessProfile,
   OrganizationPlugin,
   Plugin,
   PluginCustomRequest,
   PluginDependency,
 } from '../../domain/entities';
-import { PluginDependencyCycleError } from '../../domain/errors';
 import {
   DomainEvent,
   OrganizationPluginRepository,
@@ -25,9 +31,12 @@ import {
   PluginTranslationRepository,
   PluginRepository,
   Repositories,
+  BusinessProfileRepository,
+  OrganizationBusinessProfileRepository,
 } from '../../domain/repositories';
 import { UnitOfWork } from '../../application/ports';
 import { withActor } from '@facturero/outbox-relay';
+import { PluginDependencyCycleError } from '../../domain/errors';
 
 function toPlugin(m: PluginModel): Plugin {
   return Plugin.fromPersistence({
@@ -80,6 +89,40 @@ function toPluginCustomRequest(m: PluginCustomRequestModel): PluginCustomRequest
     quotedPriceCents: m.quoted_price_cents === null ? null : Number(m.quoted_price_cents),
     rejectionReason: m.rejection_reason,
     createdAt: m.created_at,
+    updatedAt: m.updated_at,
+  });
+}
+
+function toBusinessProfile(m: BusinessProfileModel): BusinessProfile {
+  return BusinessProfile.fromPersistence({
+    id: m.id,
+    code: m.code,
+    name: m.name,
+    description: m.description,
+    icon: m.icon,
+    sortOrder: m.sort_order,
+    isActive: m.is_active,
+    createdAt: m.created_at,
+    updatedAt: m.updated_at,
+  });
+}
+
+function toBusinessProfilePlugin(m: BusinessProfilePluginModel): BusinessProfilePlugin {
+  return BusinessProfilePlugin.fromPersistence({
+    businessProfileId: m.business_profile_id,
+    pluginId: m.plugin_id,
+    recommendation: m.recommendation,
+    sortOrder: m.sort_order,
+  });
+}
+
+function toOrganizationBusinessProfile(m: OrganizationBusinessProfileModel): OrganizationBusinessProfile {
+  return OrganizationBusinessProfile.fromPersistence({
+    organizationId: m.organization_id,
+    businessProfileId: m.business_profile_id,
+    status: m.status,
+    decidedByUserId: m.decided_by_user_id,
+    decidedAt: m.decided_at,
     updatedAt: m.updated_at,
   });
 }
@@ -305,6 +348,66 @@ function pluginTranslationRepository(tx?: Transaction): PluginTranslationReposit
   };
 }
 
+function businessProfileRepository(tx?: Transaction): BusinessProfileRepository {
+  return {
+    async listActive() {
+      const ms = await BusinessProfileModel.findAll({
+        where: { is_active: true },
+        order: [['sort_order', 'ASC']],
+        transaction: tx,
+      });
+      return ms.map(toBusinessProfile);
+    },
+    async findByCode(code) {
+      const m = await BusinessProfileModel.findOne({ where: { code }, transaction: tx });
+      return m ? toBusinessProfile(m) : null;
+    },
+    async findById(id) {
+      const m = await BusinessProfileModel.findByPk(id, { transaction: tx });
+      return m ? toBusinessProfile(m) : null;
+    },
+    async findPlugins(profileId) {
+      const ms = await BusinessProfilePluginModel.findAll({
+        where: { business_profile_id: profileId },
+        order: [['sort_order', 'ASC']],
+        transaction: tx,
+      });
+      return ms.map(toBusinessProfilePlugin);
+    },
+    async findTranslation(profileId, locale) {
+      const m = await BusinessProfileTranslationModel.findOne({
+        where: { business_profile_id: profileId, locale },
+        transaction: tx,
+      });
+      if (!m) return null;
+      return { businessProfileId: m.business_profile_id, name: m.name, description: m.description };
+    },
+  };
+}
+
+function organizationBusinessProfileRepository(tx?: Transaction): OrganizationBusinessProfileRepository {
+  return {
+    async find(organizationId) {
+      const m = await OrganizationBusinessProfileModel.findByPk(organizationId, { transaction: tx });
+      return m ? toOrganizationBusinessProfile(m) : null;
+    },
+    async upsert(obp) {
+      const p = obp.toPersistence();
+      await OrganizationBusinessProfileModel.upsert(
+        {
+          organization_id: p.organizationId,
+          business_profile_id: p.businessProfileId,
+          status: p.status,
+          decided_by_user_id: p.decidedByUserId,
+          decided_at: p.decidedAt,
+          updated_at: p.updatedAt,
+        },
+        { transaction: tx },
+      );
+    },
+  };
+}
+
 export function buildRepositories(tx?: Transaction): Repositories {
   return {
     plugins: pluginRepository(tx),
@@ -313,6 +416,8 @@ export function buildRepositories(tx?: Transaction): Repositories {
     organizationPlugins: organizationPluginRepository(tx),
     customRequests: pluginCustomRequestRepository(tx),
     outbox: outboxRepository(tx),
+    businessProfiles: businessProfileRepository(tx),
+    organizationBusinessProfiles: organizationBusinessProfileRepository(tx),
   };
 }
 

@@ -1,0 +1,134 @@
+{
+  "profiles": [
+    {
+      "code": "retail.store",
+      "name": "Tienda / comercio",
+      "description": "Venta al por menor o comercio general.",
+      "icon": "mdi-storefront-outline",
+      "sort_order": 1,
+      "plugins": [
+        { "code": "infra.catalog_products", "recommendation": "essential", "sort_order": 1 },
+        { "code": "crm.contacts", "recommendation": "essential", "sort_order": 2 },
+        { "code": "finance.electronic_invoicing", "recommendation": "essential", "sort_order": 3 },
+        { "code": "pos.core", "recommendation": "essential", "sort_order": 4 },
+        { "code": "pos.cash_sessions", "recommendation": "essential", "sort_order": 5 },
+        { "code": "pos.payment_methods", "recommendation": "essential", "sort_order": 6 },
+        { "code": "inventory.kardex", "recommendation": "suggested", "sort_order": 7 },
+        { "code": "pos.discounts_promotions", "recommendation": "suggested", "sort_order": 8 },
+        { "code": "inventory.reorder_alerts", "recommendation": "suggested", "sort_order": 9 },
+        { "code": "bi.dashboards", "recommendation": "suggested", "sort_order": 10 }
+      ],
+      "translations": {
+        "en": { "name": "Retail store", "description": "General retail or store business." },
+        "fr": { "name": "Boutique / magasin", "description": "Commerce de détail ou magasin général." }
+      }
+    },
+    {
+      "code": "health.pharmacy",
+      "name": "Farmacia",
+      "description": "Farmacia con control de lotes y caducidad.",
+      "icon": "mdi-pill",
+      "sort_order": 2,
+      "plugins": [
+        { "code": "infra.catalog_products", "recommendation": "essential", "sort_order": 1 },
+        { "code": "crm.contacts", "recommendation": "essential", "sort_order": 2 },
+        { "code": "finance.electronic_invoicing", "recommendation": "essential", "sort_order": 3 },
+        { "code": "pos.core", "recommendation": "essential", "sort_order": 4 },
+        { "code": "pos.cash_sessions", "recommendation": "essential", "sort_order": 5 },
+        { "code": "pos.payment_methods", "recommendation": "essential", "sort_order": 6 },
+        { "code": "inventory.kardex", "recommendation": "essential", "sort_order": 7 },
+        { "code": "inventory.lot_tracking", "recommendation": "essential", "sort_order": 8 },
+        { "code": "inventory.reorder_alerts", "recommendation": "suggested", "sort_order": 9 },
+        { "code": "inventory.suppliers", "recommendation": "suggested", "sort_order": 10 },
+        { "code": "purchasing.purchase_orders", "recommendation": "suggested", "sort_order": 11 },
+        { "code": "bi.dashboards", "recommendation": "suggested", "sort_order": 12 }
+      ],
+      "translations": {
+        "en": { "name": "Pharmacy", "description": "Pharmacy with batch and expiry tracking." },
+        "fr": { "name": "Pharmacie", "description": "Pharmacie avec suivi des lots et dates de péremption." }
+      }
+    },
+    {
+      "code": "food.restaurant",
+      "name": "Restaurante / cafetería",
+      "description": "Restaurante, cafetería o servicio de alimentos.",
+      "icon": "mdi-silverware-fork-knife",
+      "sort_order": 3,
+      "plugins": [
+        { "code": "infra.catalog_products", "recommendation": "essential", "sort_order": 1 },
+        { "code": "finance.electronic_invoicing", "recommendation": "essential", "sort_order": 2 },
+        { "code": "pos.core", "recommendation": "essential", "sort_order": 3 },
+        { "code": "pos.cash_sessions", "recommendation": "essential", "sort_order": 4 },
+        { "code": "pos.payment_methods", "recommendation": "essential", "sort_order": 5 },
+        { "code": "pos.discounts_promotions", "recommendation": "suggested", "sort_order": 6 },
+        { "code": "inventory.kardex", "recommendation": "suggested", "sort_order": 7 },
+        { "code": "production.bom", "recommendation": "suggested", "sort_order": 8 },
+        { "code": "hr.attendance", "recommendation": "suggested", "sort_order": 9 }
+      ],
+      "translations": {
+        "en": { "name": "Restaurant / café", "description": "Restaurant, café or food service business." },
+        "fr": { "name": "Restaurant / café", "description": "Restaurant, café ou service de restauration." }
+      }
+    },
+    {
+      "code": "services.professional",
+      "name": "Servicios profesionales",
+      "description": "Consultoría, despacho, agencia o servicio profesional.",
+      "icon": "mdi-briefcase-outline",
+      "sort_order": 4,
+      "plugins": [
+        { "code": "crm.contacts", "recommendation": "essential", "sort_order": 1 },
+        { "code": "finance.electronic_invoicing", "recommendation": "essential", "sort_order": 2 },
+        { "code": "crm.quotes", "recommendation": "essential", "sort_order": 3 },
+        { "code": "projects.tasks_kanban", "recommendation": "essential", "sort_order": 4 },
+        { "code": "projects.time_tracking", "recommendation": "suggested", "sort_order": 5 },
+        { "code": "projects.project_billing", "recommendation": "suggested", "sort_order": 6 },
+        { "code": "crm.leads_pipeline", "recommendation": "suggested", "sort_order": 7 },
+        { "code": "comm.shared_documents", "recommendation": "suggested", "sort_order": 8 }
+      ],
+      "translations": {
+        "en": { "name": "Professional services", "description": "Consultancy, agency or professional service business." },
+        "fr": { "name": "Services professionnels", "description": "Cabinet de conseil, agence ou service professionnel." }
+      }
+    },
+    {
+      "code": "wholesale.distributor",
+      "name": "Distribuidora / mayorista",
+      "description": "Venta mayorista, distribución o cadena de suministro.",
+      "icon": "mdi-truck-outline",
+      "sort_order": 5,
+      "plugins": [
+        { "code": "infra.catalog_products", "recommendation": "essential", "sort_order": 1 },
+        { "code": "crm.contacts", "recommendation": "essential", "sort_order": 2 },
+        { "code": "finance.electronic_invoicing", "recommendation": "essential", "sort_order": 3 },
+        { "code": "inventory.warehouses", "recommendation": "essential", "sort_order": 4 },
+        { "code": "inventory.kardex", "recommendation": "essential", "sort_order": 5 },
+        { "code": "purchasing.purchase_orders", "recommendation": "suggested", "sort_order": 6 },
+        { "code": "inventory.suppliers", "recommendation": "suggested", "sort_order": 7 },
+        { "code": "inventory.warehouse_transfers", "recommendation": "suggested", "sort_order": 8 },
+        { "code": "crm.quotes", "recommendation": "suggested", "sort_order": 9 },
+        { "code": "finance.accounts_receivable_payable", "recommendation": "suggested", "sort_order": 10 }
+      ],
+      "translations": {
+        "en": { "name": "Distributor / wholesaler", "description": "Wholesale, distribution or supply chain business." },
+        "fr": { "name": "Distributeur / grossiste", "description": "Commerce de gros, distribution ou chaîne d'approvisionnement." }
+      }
+    },
+    {
+      "code": "general.other",
+      "name": "Otro / aún no lo sé",
+      "description": "Empieza con lo básico y descubre qué módulos necesitas.",
+      "icon": "mdi-dots-horizontal-circle-outline",
+      "sort_order": 6,
+      "plugins": [
+        { "code": "infra.catalog_products", "recommendation": "essential", "sort_order": 1 },
+        { "code": "crm.contacts", "recommendation": "essential", "sort_order": 2 },
+        { "code": "finance.electronic_invoicing", "recommendation": "essential", "sort_order": 3 }
+      ],
+      "translations": {
+        "en": { "name": "Other / not sure yet", "description": "Start with the basics and discover what modules you need." },
+        "fr": { "name": "Autre / pas encore sûr", "description": "Commencez avec l'essentiel et découvrez les modules dont vous avez besoin." }
+      }
+    }
+  ]
+}

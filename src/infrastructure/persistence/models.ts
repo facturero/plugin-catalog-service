@@ -180,3 +180,102 @@ PluginModel.hasMany(PluginDependencyModel, { foreignKey: 'plugin_id', as: 'depen
 PluginDependencyModel.belongsTo(PluginModel, { foreignKey: 'plugin_id' });
 PluginModel.hasMany(OrganizationPluginModel, { foreignKey: 'plugin_id' });
 OrganizationPluginModel.belongsTo(PluginModel, { foreignKey: 'plugin_id' });
+
+// --- Business Profiles ---
+
+export class BusinessProfileModel extends Model<
+  InferAttributes<BusinessProfileModel>,
+  InferCreationAttributes<BusinessProfileModel>
+> {
+  declare id: string;
+  declare code: string;
+  declare name: string;
+  declare description: string;
+  declare icon: string;
+  declare sort_order: number;
+  declare is_active: boolean;
+  declare created_at: Date;
+  declare updated_at: Date;
+}
+
+BusinessProfileModel.init(
+  {
+    id: { type: DataTypes.CHAR(36), primaryKey: true },
+    code: { type: DataTypes.STRING(100), allowNull: false, unique: true },
+    name: { type: DataTypes.STRING(255), allowNull: false },
+    description: { type: DataTypes.TEXT, allowNull: false },
+    icon: { type: DataTypes.STRING(100), allowNull: false, defaultValue: 'mdi-storefront-outline' },
+    sort_order: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
+    is_active: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true },
+    created_at: DataTypes.DATE,
+    updated_at: DataTypes.DATE,
+  },
+  { sequelize, tableName: 'business_profiles', timestamps: false },
+);
+
+export class BusinessProfilePluginModel extends Model<
+  InferAttributes<BusinessProfilePluginModel>,
+  InferCreationAttributes<BusinessProfilePluginModel>
+> {
+  declare business_profile_id: string;
+  declare plugin_id: string;
+  declare recommendation: 'essential' | 'suggested';
+  declare sort_order: number;
+}
+
+BusinessProfilePluginModel.init(
+  {
+    business_profile_id: { type: DataTypes.CHAR(36), primaryKey: true },
+    plugin_id: { type: DataTypes.CHAR(36), primaryKey: true },
+    recommendation: { type: DataTypes.ENUM('essential', 'suggested'), allowNull: false },
+    sort_order: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
+  },
+  { sequelize, tableName: 'business_profile_plugins', timestamps: false },
+);
+
+export class BusinessProfileTranslationModel extends Model<
+  InferAttributes<BusinessProfileTranslationModel>,
+  InferCreationAttributes<BusinessProfileTranslationModel>
+> {
+  declare business_profile_id: string;
+  declare locale: string;
+  declare name: string;
+  declare description: string;
+}
+
+BusinessProfileTranslationModel.init(
+  {
+    business_profile_id: { type: DataTypes.CHAR(36), primaryKey: true },
+    locale: { type: DataTypes.STRING(5), primaryKey: true },
+    name: { type: DataTypes.STRING(255), allowNull: false },
+    description: { type: DataTypes.TEXT, allowNull: false },
+  },
+  { sequelize, tableName: 'business_profile_translations', timestamps: false },
+);
+
+export class OrganizationBusinessProfileModel extends Model<
+  InferAttributes<OrganizationBusinessProfileModel>,
+  InferCreationAttributes<OrganizationBusinessProfileModel>
+> {
+  declare organization_id: string;
+  declare business_profile_id: string | null;
+  declare status: 'selected' | 'skipped';
+  declare decided_by_user_id: string | null;
+  declare decided_at: Date;
+  declare updated_at: Date;
+}
+
+OrganizationBusinessProfileModel.init(
+  {
+    organization_id: { type: DataTypes.CHAR(36), primaryKey: true },
+    business_profile_id: { type: DataTypes.CHAR(36), allowNull: true },
+    status: { type: DataTypes.ENUM('selected', 'skipped'), allowNull: false, defaultValue: 'selected' },
+    decided_by_user_id: { type: DataTypes.CHAR(36), allowNull: true },
+    decided_at: DataTypes.DATE,
+    updated_at: DataTypes.DATE,
+  },
+  { sequelize, tableName: 'organization_business_profiles', timestamps: false },
+);
+
+BusinessProfileModel.hasMany(BusinessProfilePluginModel, { foreignKey: 'business_profile_id' });
+BusinessProfilePluginModel.belongsTo(BusinessProfileModel, { foreignKey: 'business_profile_id' });

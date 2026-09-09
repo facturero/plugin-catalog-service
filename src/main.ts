@@ -12,6 +12,11 @@ import { RequestCustomPluginUseCase } from './application/use-cases/request-cust
 import { ListMyCustomRequestsUseCase } from './application/use-cases/list-my-custom-requests';
 import { FulfillCustomPluginRequestUseCase } from './application/use-cases/fulfill-custom-plugin-request';
 import { RejectCustomPluginRequestUseCase } from './application/use-cases/reject-custom-plugin-request';
+import { ListBusinessProfilesUseCase } from './application/use-cases/list-business-profiles';
+import { GetMyBusinessProfileUseCase } from './application/use-cases/get-my-business-profile';
+import { ChooseBusinessProfileUseCase } from './application/use-cases/choose-business-profile';
+import { GetBusinessProfileRecommendationsUseCase } from './application/use-cases/get-business-profile-recommendations';
+import { ActivatePluginsBatchUseCase } from './application/use-cases/activate-plugins-batch';
 import { createApp } from './interface/http/app';
 import { OutboxRelay } from '@facturero/outbox-relay';
 
@@ -47,6 +52,22 @@ async function bootstrap(): Promise<void> {
       listMyCustomRequests: new ListMyCustomRequestsUseCase(repos.customRequests),
       fulfillCustomRequest: new FulfillCustomPluginRequestUseCase(unitOfWork),
       rejectCustomRequest: new RejectCustomPluginRequestUseCase(unitOfWork),
+      listBusinessProfiles: new ListBusinessProfilesUseCase(repos.businessProfiles),
+      getMyBusinessProfile: new GetMyBusinessProfileUseCase(
+        repos.businessProfiles,
+        repos.organizationBusinessProfiles,
+      ),
+      chooseBusinessProfile: new ChooseBusinessProfileUseCase(unitOfWork),
+      getBusinessProfileRecommendations: new GetBusinessProfileRecommendationsUseCase(
+        repos.businessProfiles,
+        repos.plugins,
+        repos.dependencies,
+        repos.organizationPlugins,
+        repos.translations,
+      ),
+      activatePluginsBatch: new ActivatePluginsBatchUseCase(
+        new ActivatePluginUseCase(unitOfWork),
+      ),
     },
     corsOrigin: config.CORS_ORIGIN,
   });

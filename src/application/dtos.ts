@@ -79,3 +79,57 @@ export interface FulfillCustomPluginRequestInput {
   imageUrl?: string | null;
   basedOnPluginId?: string | null;
 }
+
+// ---------------------------------------------------------------------------
+// Business Profiles
+// ---------------------------------------------------------------------------
+
+export interface BusinessProfileDTO {
+  code: string;
+  name: string;
+  description: string;
+  icon: string;
+  /** Fila traducible; `pending` significa que la org aún no decide. */
+  status?: 'selected' | 'skipped';
+}
+
+export interface RecommendationPluginDTO {
+  code: string;
+  name: string;
+  category: string;
+  buildStatus: string;
+  priceCents: number;
+  currency: string;
+}
+
+export interface RecommendationRequirementDTO {
+  code: string;
+  alreadyActive: boolean;
+}
+
+export interface RecommendationItemDTO {
+  plugin: RecommendationPluginDTO;
+  recommendation: 'essential' | 'suggested';
+  state: 'activatable' | 'already_active' | 'coming_soon' | 'blocked';
+  alreadyActive: boolean;
+  requires: RecommendationRequirementDTO[];
+}
+
+export interface BusinessProfileRecommendationsDTO {
+  profile: { code: string; name: string };
+  items: RecommendationItemDTO[];
+  totalMonthlyCents: number;
+}
+
+export interface ChooseBusinessProfileInput {
+  organizationId: string;
+  userId: string;
+  code: string | null;
+  /** De dónde viene la decisión: alta o cambios posteriores desde Ajustes. */
+  source?: 'onboarding' | 'settings';
+}
+
+export interface BatchActivationResult {
+  code: string;
+  result: 'activated' | 'already_active' | 'not_available' | 'missing_dependencies' | 'not_found';
+}

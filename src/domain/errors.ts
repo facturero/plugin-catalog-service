@@ -102,6 +102,12 @@ export class InvalidCustomRequestStateError extends AppError {
   constructor(message = 'La solicitud ya está en un estado final (created/rejected).') { super(message); }
 }
 
+export class BusinessProfileNotFoundError extends AppError {
+  readonly code = 'BUSINESS_PROFILE_NOT_FOUND';
+  readonly httpStatus = 404;
+  constructor(message = 'Perfil de negocio no encontrado.') { super(message); }
+}
+
 /** Integridad del grafo de dependencias: un ciclo nunca debería existir si el seed viene bien armado. */
 export class PluginDependencyCycleError extends AppError {
   readonly code = 'PLUGIN_DEPENDENCY_CYCLE';

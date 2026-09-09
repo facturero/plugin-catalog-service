@@ -27,6 +27,19 @@ export const rejectCustomRequestSchema = z.object({
   reason: z.string().min(1, 'La razón es obligatoria.').max(2000),
 });
 
+export const businessProfileCodeParamSchema = z.object({
+  code: z.string().min(1, 'El código del perfil de negocio es obligatorio.'),
+});
+
+export const chooseBusinessProfileSchema = z.object({
+  code: z.string().min(1).nullable().optional(),
+  source: z.enum(['onboarding', 'settings']).default('onboarding'),
+});
+
+export const activatePluginsBatchSchema = z.object({
+  codes: z.array(z.string().min(1)).max(50),
+});
+
 function validate<T extends ZodSchema>(source: 'json' | 'param', schema: T) {
   return zValidator(source, schema as never, (result) => {
     if (!result.success) {
