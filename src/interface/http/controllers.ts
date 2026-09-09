@@ -147,6 +147,7 @@ export function chooseBusinessProfileController(useCase: ChooseBusinessProfileUs
       userId,
       code: body.code ?? null,
       source: body.source ?? 'onboarding',
+      locale: c.get('locale'),
     });
     return c.json(result, 200);
   };

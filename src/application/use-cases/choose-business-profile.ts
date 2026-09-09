@@ -43,11 +43,14 @@ export class ChooseBusinessProfileUseCase {
         occurredAt: new Date(),
       });
 
-      const { execute } = new GetMyBusinessProfileUseCase(
+      // Ojo con desestructurar `execute`: el método se queda sin `this` y la
+      // primera línea que toque un repositorio revienta con "Cannot read
+      // properties of undefined". Se llama sobre la instancia.
+      const getMine = new GetMyBusinessProfileUseCase(
         repos.businessProfiles,
         repos.organizationBusinessProfiles,
       );
-      return execute(organizationId);
+      return getMine.execute(organizationId, input.locale);
     });
   }
 }

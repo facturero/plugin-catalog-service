@@ -1,6 +1,9 @@
 import { UnitOfWork } from '../application/ports';
 import {
+  BusinessProfileRepository,
+  BusinessProfileTranslation,
   DomainEvent,
+  OrganizationBusinessProfileRepository,
   OrganizationPluginRepository,
   OutboxRepository,
   PluginCustomRequestRepository,
@@ -12,6 +15,9 @@ import {
 } from '../domain/repositories';
 import { PluginDependencyCycleError } from '../domain/errors';
 import {
+  BusinessProfile,
+  BusinessProfilePlugin,
+  OrganizationBusinessProfile,
   OrganizationPlugin,
   Plugin,
   PluginCustomRequest,
@@ -52,6 +58,11 @@ export function createInMemoryRepositories(): Repositories & { events: DomainEve
   const deps = new Map<string, PluginDependency>();
   const orgPlugins = new Map<string, OrganizationPlugin>();
   const requests = new Map<string, PluginCustomRequest>();
+  const profiles = new Map<string, BusinessProfile>();
+  const profilePlugins = new Map<string, BusinessProfilePlugin[]>();
+  // Traducciones de perfil por `${locale}|${profileId}`, igual que las de plugin.
+  const profileTranslations = new Map<string, BusinessProfileTranslation>();
+  const orgProfiles = new Map<string, OrganizationBusinessProfile>();
   const events: DomainEvent[] = [];
 
   const depKey = (pluginId: string, dependsOn: string) => `${pluginId}->${dependsOn}`;
@@ -152,6 +163,35 @@ export function createInMemoryRepositories(): Repositories & { events: DomainEve
     },
   };
 
+  const businessProfileRepo: BusinessProfileRepository = {
+    async listActive() {
+      return [...profiles.values()]
+        .filter((p) => p.isActive)
+        .sort((a, b) => a.sortOrder - b.sortOrder);
+    },
+    async findById(id) {
+      return profiles.get(id) ?? null;
+    },
+    async findByCode(code) {
+      return [...profiles.values()].find((p) => p.code === code) ?? null;
+    },
+    async findPlugins(profileId) {
+      return profilePlugins.get(profileId) ?? [];
+    },
+    async findTranslation(profileId, locale) {
+      return profileTranslations.get(`${locale}|${profileId}`) ?? null;
+    },
+  };
+
+  const orgBusinessProfileRepo: OrganizationBusinessProfileRepository = {
+    async find(organizationId) {
+      return orgProfiles.get(organizationId) ?? null;
+    },
+    async upsert(obp) {
+      orgProfiles.set(obp.organizationId, obp);
+    },
+  };
+
   const translationRepo: PluginTranslationRepository = {
     async mapByLocale(locale) {
       const out = new Map<string, PluginTranslation>();
@@ -165,13 +205,18 @@ export function createInMemoryRepositories(): Repositories & { events: DomainEve
 
   return {
     events,
-    __internals: { plugins, deps, orgPlugins, requests, depKey, translations },
+    __internals: {
+      plugins, deps, orgPlugins, requests, depKey, translations,
+      profiles, profilePlugins, profileTranslations, orgProfiles,
+    },
     plugins: pluginRepo,
     translations: translationRepo,
     dependencies: dependencyRepo,
     organizationPlugins: orgPluginRepo,
     customRequests: requestRepo,
     outbox,
+    businessProfiles: businessProfileRepo,
+    organizationBusinessProfiles: orgBusinessProfileRepo,
   } as Repositories & {
     events: DomainEvent[];
     __internals: {
@@ -181,6 +226,10 @@ export function createInMemoryRepositories(): Repositories & { events: DomainEve
       requests: Map<string, PluginCustomRequest>;
       depKey: (a: string, b: string) => string;
       translations: Map<string, PluginTranslation>;
+      profiles: Map<string, BusinessProfile>;
+      profilePlugins: Map<string, BusinessProfilePlugin[]>;
+      profileTranslations: Map<string, BusinessProfileTranslation>;
+      orgProfiles: Map<string, OrganizationBusinessProfile>;
     };
   };
 }

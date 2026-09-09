@@ -127,6 +127,8 @@ export interface ChooseBusinessProfileInput {
   code: string | null;
   /** De dónde viene la decisión: alta o cambios posteriores desde Ajustes. */
   source?: 'onboarding' | 'settings';
+  /** Para devolver el perfil ya traducido, igual que hace el GET. */
+  locale?: string;
 }
 
 export interface BatchActivationResult {
