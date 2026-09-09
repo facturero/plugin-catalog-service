@@ -16,13 +16,6 @@
       "description": "Punto unico de entrada HTTP al sistema. Recibe todas las peticiones, verifica el JWT del usuario, extrae los datos del token (org_id, user_id, permisos) y los inyecta como headers de confianza (X-Organization-Id, etc.) antes de reenviar la peticion al microservicio correspondiente. Asi ningun servicio interno necesita validar tokens por su cuenta."
     },
     {
-      "id": "infra.catalog_products",
-      "name": "Catalogo de productos (incluye categorias y unidades de medida)",
-      "service": "product-service",
-      "note": "Verificado en migrations/20260706000000-create-product-tables.cjs: 'categories' y 'units' se crean en la MISMA migracion que 'products', con FK real products.category_id -> categories.id (onDelete SET NULL) y products.unit_id -> units.id. No son servicios separables; viven en la misma base de datos y el mismo dominio (src/domain/entities.ts). Por eso categorias y unidades NO son un nodo aparte.",
-      "description": "Catalogo central de productos y servicios de cada organizacion: nombre, SKU, precio (en centavos con Dinero.js), tipo (bien/servicio), impuestos asociados (M:N) e imagenes. Incluye categorias (con jerarquia padre-hijo) y unidades de medida como sub-recursos del mismo servicio, no como modulos aparte."
-    },
-    {
       "id": "infra.tax_catalog",
       "name": "Catalogo fiscal por pais (paises, tasas, tipos de identificacion/comprobante)",
       "service": "tax-service",
@@ -52,6 +45,19 @@
     }
   ],
   "modulos": [
+    {
+      "id": "infra.catalog_products",
+      "name": "Catalogo de productos (incluye categorias y unidades de medida)",
+      "category": "Inventario y Cadena de Suministro",
+      "status": "hecho",
+      "phase": 1,
+      "service": "product-service",
+      "note": "Verificado en migrations/20260706000000-create-product-tables.cjs: 'categories' y 'units' se crean en la MISMA migracion que 'products', con FK real products.category_id -> categories.id (onDelete SET NULL) y products.unit_id -> units.id. No son servicios separables; viven en la misma base de datos y el mismo dominio (src/domain/entities.ts). Por eso categorias y unidades NO son un nodo aparte.",
+      "depends_on": [
+        "admin.multitenant"
+      ],
+      "description": "Catalogo central de productos y servicios de cada organizacion: nombre, SKU, precio (en centavos con Dinero.js), tipo (bien/servicio), impuestos asociados (M:N) e imagenes. Incluye categorias (con jerarquia padre-hijo) y unidades de medida como sub-recursos del mismo servicio, no como modulos aparte."
+    },
     {
       "id": "admin.audit_log",
       "name": "Auditoria de acciones (logs)",
