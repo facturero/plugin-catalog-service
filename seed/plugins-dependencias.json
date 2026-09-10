@@ -62,9 +62,9 @@
       "id": "admin.audit_log",
       "name": "Auditoria de acciones (logs)",
       "category": "Administracion del Sistema",
-      "status": "falta",
+      "status": "hecho",
       "phase": 1,
-      "service": null,
+      "service": "audit-log-service",
       "depends_on": [
         "admin.users_roles"
       ],
@@ -332,9 +332,9 @@
       "id": "inventory.warehouses",
       "name": "Gestion de almacenes/bodegas multiples",
       "category": "Inventario y Cadena de Suministro",
-      "status": "falta",
+      "status": "hecho",
       "phase": 1,
-      "service": null,
+      "service": "inventory-service",
       "depends_on": [
         "infra.catalog_products"
       ],
@@ -356,9 +356,9 @@
       "id": "inventory.kardex",
       "name": "Control de stock / Kardex (PEPS, UEPS, CPP)",
       "category": "Inventario y Cadena de Suministro",
-      "status": "parcial",
+      "status": "hecho",
       "phase": 2,
-      "service": "pos (solo cache local de stock: campo 'stock' en Product del schema Prisma del POS; no es un modulo real de inventario/kardex)",
+      "service": "inventory-service",
       "depends_on": [
         "inventory.warehouses"
       ],
