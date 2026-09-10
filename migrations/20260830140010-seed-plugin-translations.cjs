@@ -4,11 +4,9 @@ const path = require('path');
 const LOCALES = ['en', 'fr'];
 
 /**
- * Siembra las traducciones del catalogo. El idioma base (es) vive en la propia
- * tabla `plugins` y actua de fallback, asi que aqui solo entran en/fr.
- *
- * Idempotente como el seeder de plugins: inserta lo que falta y actualiza lo que
- * cambio, sin tocar filas de otros locales que alguien haya cargado a mano.
+ * Ex-seeder 20260830140001, promovido a migración (migraciones.md). Idempotente:
+ * inserta lo que falta y actualiza lo que cambió, sin tocar filas de otros locales
+ * que alguien haya cargado a mano.
  */
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {

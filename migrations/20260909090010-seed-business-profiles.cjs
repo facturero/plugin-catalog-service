@@ -2,6 +2,11 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 
+/**
+ * Ex-seeder 20260909090001, promovido a migración (migraciones.md). Idempotente:
+ * compara por `code` (no por id, que cambia cada re-ejecución) e inserta solo lo
+ * que falta. Antes rompía el deploy: re-insertaba perfiles → UNIQUE(code) violado.
+ */
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface) {
@@ -12,15 +17,15 @@ module.exports = {
     const data = JSON.parse(raw);
 
     const existing = await queryInterface.sequelize.query(
-      `SELECT id FROM business_profiles`,
+      `SELECT code FROM business_profiles`,
       { type: queryInterface.sequelize.QueryTypes.SELECT },
     );
-    const existingIds = new Set(existing.map((r) => r.id));
+    const existingCodes = new Set(existing.map((r) => r.code));
 
     const now = new Date();
 
     for (const p of data.profiles) {
-      if (existingIds.has(p.code)) continue;
+      if (existingCodes.has(p.code)) continue;
 
       const profileId = crypto.randomUUID();
       await queryInterface.bulkInsert('business_profiles', [
@@ -62,8 +67,5 @@ module.exports = {
     }
   },
 
-  async down(queryInterface) {
-    await queryInterface.bulkDelete('business_profile_plugins');
-    await queryInterface.bulkDelete('business_profiles');
-  },
+  async down() {},
 };

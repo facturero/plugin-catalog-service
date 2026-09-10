@@ -1,6 +1,12 @@
 const fs = require('fs');
 const path = require('path');
 
+/**
+ * Ex-seeder 20260909090002, promovido a migración (migraciones.md). Idempotente:
+ * compara por `business_profile_id:locale`, no por fila. Antes leía
+ * `SELECT business_profile_id` pero comparaba contra `r.locale` (undefined):
+ * el set nunca coincidía → re-insertaba → colisión de PK en el deploy.
+ */
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface) {
@@ -11,7 +17,7 @@ module.exports = {
     const data = JSON.parse(raw);
 
     const existing = await queryInterface.sequelize.query(
-      `SELECT business_profile_id FROM business_profile_translations`,
+      `SELECT business_profile_id, locale FROM business_profile_translations`,
       { type: queryInterface.sequelize.QueryTypes.SELECT },
     );
     const existingSet = new Set(existing.map((r) => `${r.business_profile_id}:${r.locale}`));
@@ -42,7 +48,5 @@ module.exports = {
     }
   },
 
-  async down(queryInterface) {
-    await queryInterface.bulkDelete('business_profile_translations');
-  },
+  async down() {},
 };

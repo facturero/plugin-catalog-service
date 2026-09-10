@@ -10,6 +10,12 @@ const statusToBuildStatus = {
   falta: 'en_construccion',
 };
 
+/**
+ * Ex-seeder 20260824090001, promovido a migración (migraciones.md: las semillas
+ * se ejecutan una vez, no en cada deploy). Idempotente: inserta lo que falta y
+ * actualiza la metadata que cambió, sin pisar price_cents / is_active / image_url
+ * (los administra el negocio, no el seed).
+ */
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface) {
@@ -138,13 +144,5 @@ module.exports = {
     }
   },
 
-  async down(queryInterface) {
-    await queryInterface.bulkDelete('plugin_dependencies', {});
-    await queryInterface.bulkDelete('organization_plugins', {});
-    await queryInterface.sequelize.query('UPDATE plugin_custom_requests SET resulting_plugin_id = NULL');
-    await queryInterface.sequelize.query('UPDATE plugins SET based_on_plugin_id = NULL');
-    await queryInterface.bulkDelete('plugins', {
-      created_for_organization_id: null,
-    });
-  },
+  async down() {},
 };

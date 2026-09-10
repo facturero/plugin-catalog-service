@@ -19,7 +19,6 @@ RUN printf '@facturero:registry=https://npm.pkg.github.com\n//npm.pkg.github.com
     && rm -f .npmrc
 COPY --from=builder /app/dist/ dist/
 COPY migrations/ migrations/
-COPY seeders/ seeders/
 COPY seed/ seed/
 COPY .sequelizerc .sequelizerc
 COPY sequelize.config.cjs sequelize.config.cjs
