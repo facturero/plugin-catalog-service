@@ -422,7 +422,14 @@ export function buildRepositories(tx?: Transaction): Repositories {
 }
 
 export class SequelizeUnitOfWork implements UnitOfWork {
+  constructor(private readonly onCommit?: (tx: Transaction) => void) {}
+
   async execute<T>(work: (repos: Repositories) => Promise<T>): Promise<T> {
-    return sequelize.transaction(async (tx) => work(buildRepositories(tx)));
+    return sequelize.transaction(async (tx) => {
+      // El relay publica el outbox justo tras el commit; sin este enganche los
+      // eventos (p.ej. plugin.activated) esperan los 30s del timer de respaldo.
+      this.onCommit?.(tx);
+      return work(buildRepositories(tx));
+    });
   }
 }

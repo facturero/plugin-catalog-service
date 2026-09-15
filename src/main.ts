@@ -24,7 +24,8 @@ async function bootstrap(): Promise<void> {
   await sequelize.authenticate();
   console.log('[plugin-catalog-service] Conectado a la base de datos.');
 
-  const unitOfWork = new SequelizeUnitOfWork();
+  let relay: OutboxRelay | undefined;
+  const unitOfWork = new SequelizeUnitOfWork((tx) => relay?.attachToTransaction(tx));
   const repos = buildRepositories();
 
   const app = createApp({
@@ -77,11 +78,12 @@ async function bootstrap(): Promise<void> {
   });
 
   if (config.RABBITMQ_URL) {
-    new OutboxRelay({
+    relay = new OutboxRelay({
       sequelize,
       rabbitmqUrl: config.RABBITMQ_URL,
       exchange: 'crm.events',
-    })
+    });
+    relay
       .start()
       .then(() => console.log('[plugin-catalog-service] Outbox relay conectado a RabbitMQ.'))
       .catch((err) => console.error('[plugin-catalog-service] No se pudo iniciar el outbox relay:', err));
