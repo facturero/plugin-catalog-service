@@ -15,6 +15,12 @@ const statusToBuildStatus = {
  * se ejecutan una vez, no en cada deploy). Idempotente: inserta lo que falta y
  * actualiza la metadata que cambió, sin pisar price_cents / is_active / image_url
  * (los administra el negocio, no el seed).
+ *
+ * El timestamp (20260830130000) va despues de 20260830120000-add-is-core-to-plugins
+ * a proposito: el seed lee y escribe is_core, y esa columna no existe en la creacion
+ * inicial. En BD vieja nunca salto porque las migraciones ya estaban registradas en
+ * SequelizeMeta; en BD desde cero fallaba con "Unknown column 'is_core'". Es idempotente,
+ * asi que re-ejecutarlo en entornos ya migrados no inserta duplicados.
  */
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
