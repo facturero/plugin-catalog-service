@@ -15,6 +15,8 @@ import {
   DiscountRedemptionRepository,
   DiscountRepository,
   OrganizationTrialRepository,
+  CartItem,
+  CartRepository,
   Repositories,
 } from '../domain/repositories';
 import { Discount } from '../domain/discount';
@@ -256,6 +258,27 @@ export function createInMemoryRepositories(): Repositories & { events: DomainEve
     },
   };
 
+  const cartStore = new Map<string, CartItem>();
+  const cartRepo: CartRepository = {
+    async list(organizationId) {
+      return [...cartStore.values()].filter((i) => i.organizationId === organizationId);
+    },
+    async add(item) {
+      const key = `${item.organizationId}:${item.pluginId}`;
+      if (cartStore.has(key)) return false;
+      cartStore.set(key, { ...item });
+      return true;
+    },
+    async remove(organizationId, pluginId) {
+      return cartStore.delete(`${organizationId}:${pluginId}`);
+    },
+    async clear(organizationId) {
+      let n = 0;
+      for (const [k, v] of cartStore) if (v.organizationId === organizationId) { cartStore.delete(k); n++; }
+      return n;
+    },
+  };
+
   return {
     events,
     __internals: {
@@ -273,6 +296,7 @@ export function createInMemoryRepositories(): Repositories & { events: DomainEve
     discounts: discountRepo,
     discountRedemptions: redemptionRepo,
     organizationTrials: trialRepo,
+    carts: cartRepo,
   } as Repositories & {
     events: DomainEvent[];
     __internals: {

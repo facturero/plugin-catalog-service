@@ -94,7 +94,19 @@ POST /organizations/me/plugins/cart/activate   mismo cuerpo (permiso plugins:man
   códigos elegidos separados por coma). Activar un solo módulo es el carrito de un artículo (`ActivatePluginUseCase.execute`).
 - **Un módulo pedido que otro del carrito necesita** se activa una vez, como contratación directa.
 - Las rutas `cart/*` van registradas ANTES de las de `:code`, que de otro modo las tomarían por un módulo llamado «cart».
-- El frontend guarda el carrito en `sessionStorage` y lo vuelve a cotizar en cada cambio (`stores/pluginCart.ts`).
+- **El carrito vive en el servidor, por organización** (tabla `organization_cart_items`), no en el navegador: sobrevive a recargar y
+  a cambiar de equipo, y lo ve cualquier administrador de la organización. Al activar, lo activado sale del carrito en la misma
+  transacción; si la activación falla, el carrito queda intacto.
+
+  ```
+  GET    /organizations/me/plugins/cart                 lo guardado: [{ code, addedAt, addedByUserId }]
+  PUT    /organizations/me/plugins/cart/items/:code     agregar (idempotente; 409 si ya está activo; plugins:manage)
+  DELETE /organizations/me/plugins/cart/items/:code     quitar (plugins:manage)
+  DELETE /organizations/me/plugins/cart                 vaciar (plugins:manage)
+  ```
+
+  Eventos de auditoría: `pricing.cart.item_added | item_removed | cleared` (solo si algo cambió). El frontend (`stores/pluginCart.ts`)
+  guarda una copia para pintar al instante, envía cada cambio al servidor (si lo rechaza, lo revierte) y vuelve a cotizar.
 
 ### Endpoints (organización)
 

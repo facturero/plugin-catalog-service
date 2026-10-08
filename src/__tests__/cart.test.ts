@@ -3,6 +3,7 @@ import { ActivatePluginUseCase } from '../application/use-cases/activate-plugin'
 import { QuoteActivationUseCase } from '../application/use-cases/quote-activation';
 import { CreateDiscountUseCase } from '../application/use-cases/manage-discounts';
 import { DEFAULT_PRICING_POLICY } from '../application/pricing-policy';
+import { AddToCartUseCase, ClearCartUseCase, GetCartUseCase, RemoveFromCartUseCase } from '../application/use-cases/cart';
 import { PluginDependency } from '../domain/entities';
 import {
   CorePluginNotConfigurableError,
@@ -190,5 +191,80 @@ describe('activar el carrito', () => {
     await new CreateDiscountUseCase(uow).execute({ code: 'SOLOUNA', name: 'Una vez', kind: 'percent', value: 1000 });
     await activate.executeMany('org-1', [e.code], { discountCode: 'SOLOUNA' });
     await expect(activate.executeMany('org-1', [a.code], { discountCode: 'SOLOUNA' })).rejects.toBeInstanceOf(DiscountRejectedError);
+  });
+});
+
+describe('el carrito guardado de la organización', () => {
+  async function conCarrito() {
+    const m = await mundo();
+    const get = new GetCartUseCase(m.uow.repos.carts, m.uow.repos.plugins);
+    return { ...m, get, add: new AddToCartUseCase(m.uow), remove: new RemoveFromCartUseCase(m.uow), clear: new ClearCartUseCase(m.uow) };
+  }
+
+  it('lo agregado queda guardado, en orden, y lo ve toda la organización', async () => {
+    const { add, get, e, a } = await conCarrito();
+    await add.execute('org-1', e.code, 'user-1');
+    await add.execute('org-1', a.code, 'user-2');
+
+    const items = await get.execute('org-1');
+    expect(items.map((i) => i.code)).toEqual(['mod.e', 'mod.a']);
+    expect(items.map((i) => i.addedByUserId)).toEqual(['user-1', 'user-2']);
+    expect(await get.execute('org-2')).toEqual([]);
+  });
+
+  it('agregar dos veces es idempotente y deja un solo aviso', async () => {
+    const { uow, add, get, e } = await conCarrito();
+    await add.execute('org-1', e.code, 'u');
+    await add.execute('org-1', e.code, 'u');
+
+    expect(await get.execute('org-1')).toHaveLength(1);
+    expect(uow.repos.events.filter((x) => x.type === 'pricing.cart.item_added')).toHaveLength(1);
+  });
+
+  it('no se puede agregar lo que no se puede activar', async () => {
+    const { uow, add, activate, e } = await conCarrito();
+    await uow.repos.plugins.save(createPlugin({ code: 'core.x', isCore: true }));
+    await uow.repos.plugins.save(createPlugin({ code: 'wip.y', buildStatus: 'en_construccion', priceCents: 100 }));
+    await activate.execute('org-1', e.code);
+
+    await expect(add.execute('org-1', 'nope', null)).rejects.toBeInstanceOf(PluginNotFoundError);
+    await expect(add.execute('org-1', 'core.x', null)).rejects.toBeInstanceOf(CorePluginNotConfigurableError);
+    await expect(add.execute('org-1', 'wip.y', null)).rejects.toBeInstanceOf(PluginNotAvailableError);
+    await expect(add.execute('org-1', e.code, null)).rejects.toBeInstanceOf(PluginAlreadyActiveError);
+  });
+
+  it('quitar y vaciar publican su aviso solo si había algo', async () => {
+    const { uow, add, remove, clear, get, e, d } = await conCarrito();
+    await add.execute('org-1', e.code, null);
+    await add.execute('org-1', d.code, null);
+
+    await remove.execute('org-1', e.code);
+    await remove.execute('org-1', e.code);
+    expect((await get.execute('org-1')).map((i) => i.code)).toEqual(['mod.d']);
+    expect(uow.repos.events.filter((x) => x.type === 'pricing.cart.item_removed')).toHaveLength(1);
+
+    await clear.execute('org-1');
+    await clear.execute('org-1');
+    expect(await get.execute('org-1')).toEqual([]);
+    expect(uow.repos.events.filter((x) => x.type === 'pricing.cart.cleared')).toHaveLength(1);
+  });
+
+  it('al activar, lo activado sale del carrito; lo demás sigue pendiente', async () => {
+    const { add, get, activate, e, d } = await conCarrito();
+    await add.execute('org-1', e.code, null);
+    await add.execute('org-1', d.code, null);
+
+    await activate.executeMany('org-1', [e.code]);
+
+    expect((await get.execute('org-1')).map((i) => i.code)).toEqual(['mod.d']);
+  });
+
+  it('si la activación falla, el carrito queda intacto', async () => {
+    const { add, get, activate, e } = await conCarrito();
+    await add.execute('org-1', e.code, null);
+
+    await expect(activate.executeMany('org-1', [e.code], { discountCode: 'NOEXISTE' })).rejects.toBeDefined();
+
+    expect((await get.execute('org-1')).map((i) => i.code)).toEqual(['mod.e']);
   });
 });

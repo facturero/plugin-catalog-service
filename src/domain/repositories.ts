@@ -88,6 +88,25 @@ export interface OrganizationBusinessProfileRepository {
   upsert(obp: OrganizationBusinessProfile): Promise<void>;
 }
 
+/** Un módulo que la organización dejó en su carrito, pendiente de activar. */
+export interface CartItem {
+  organizationId: string;
+  pluginId: string;
+  addedByUserId: string | null;
+  addedAt: Date;
+}
+
+export interface CartRepository {
+  /** Lo que hay en el carrito de la organización, en el orden en que se fue agregando. */
+  list(organizationId: string): Promise<CartItem[]>;
+  /** Devuelve true si era nuevo (false si ya estaba). */
+  add(item: CartItem): Promise<boolean>;
+  /** Devuelve true si estaba. */
+  remove(organizationId: string, pluginId: string): Promise<boolean>;
+  /** Vacía el carrito; devuelve cuántos había. */
+  clear(organizationId: string): Promise<number>;
+}
+
 export interface Repositories {
   plugins: PluginRepository;
   translations: PluginTranslationRepository;
@@ -100,6 +119,7 @@ export interface Repositories {
   discounts: DiscountRepository;
   discountRedemptions: DiscountRedemptionRepository;
   organizationTrials: OrganizationTrialRepository;
+  carts: CartRepository;
 }
 
 // ── Descuentos ────────────────────────────────────────────────────────────────

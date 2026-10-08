@@ -87,6 +87,11 @@ export class ActivatePluginUseCase {
         });
       }
 
+      // Lo que se acaba de activar ya no está pendiente: sale del carrito guardado de la organización.
+      for (const plugin of [...plan.selected, ...plan.alreadyActive]) {
+        await repos.carts.remove(organizationId, plugin.id);
+      }
+
       if (applied) {
         const now = new Date();
         const { discount, result } = applied;

@@ -17,6 +17,7 @@ import { ListMyDiscountRedemptionsUseCase } from './application/use-cases/list-m
 import { GetSubscriptionUseCase } from './application/use-cases/get-subscription';
 import { PricingPolicy } from './application/pricing-policy';
 import { DeactivatePluginUseCase } from './application/use-cases/deactivate-plugin';
+import { AddToCartUseCase, ClearCartUseCase, GetCartUseCase, RemoveFromCartUseCase } from './application/use-cases/cart';
 import { CancelPluginDeactivationUseCase } from './application/use-cases/cancel-plugin-deactivation';
 import { ApplyDueDeactivationsUseCase } from './application/use-cases/apply-due-deactivations';
 import { RequestCustomPluginUseCase } from './application/use-cases/request-custom-plugin';
@@ -96,6 +97,10 @@ async function bootstrap(): Promise<void> {
       setDiscountActive: new SetDiscountActiveUseCase(unitOfWork),
       listMyDiscountRedemptions: new ListMyDiscountRedemptionsUseCase(repos.discounts, repos.discountRedemptions),
       getSubscription: new GetSubscriptionUseCase(unitOfWork, pricingPolicy),
+      getCart: new GetCartUseCase(repos.carts, repos.plugins),
+      addToCart: new AddToCartUseCase(unitOfWork),
+      removeFromCart: new RemoveFromCartUseCase(unitOfWork),
+      clearCart: new ClearCartUseCase(unitOfWork),
     },
     corsOrigin: config.CORS_ORIGIN,
   });

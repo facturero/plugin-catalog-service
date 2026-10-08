@@ -14,6 +14,7 @@ import { GetMyBusinessProfileUseCase } from '../../application/use-cases/get-my-
 import { ChooseBusinessProfileUseCase } from '../../application/use-cases/choose-business-profile';
 import { GetBusinessProfileRecommendationsUseCase } from '../../application/use-cases/get-business-profile-recommendations';
 import { ActivatePluginsBatchUseCase } from '../../application/use-cases/activate-plugins-batch';
+import { AddToCartUseCase, ClearCartUseCase, GetCartUseCase, RemoveFromCartUseCase } from '../../application/use-cases/cart';
 import { ContextVariables } from './middlewares';
 import { ValidationError } from '../../domain/errors';
 import { activateWithDiscountSchema } from './discount-validators';
@@ -40,6 +41,31 @@ export function getOrganizationPluginsController(useCase: GetOrganizationPlugins
     const orgId = c.get('organizationId');
     const result = await useCase.execute(orgId, c.get('locale'));
     return c.json(result, 200);
+  };
+}
+
+export function getCartController(useCase: GetCartUseCase) {
+  return async (c: Ctx) => c.json(await useCase.execute(c.get('organizationId')), 200);
+}
+
+export function addToCartController(useCase: AddToCartUseCase) {
+  return async (c: Ctx) => {
+    const { code } = c.req.valid('param' as never) as { code: string };
+    return c.json(await useCase.execute(c.get('organizationId'), code, c.get('userId') ?? null), 200);
+  };
+}
+
+export function removeFromCartController(useCase: RemoveFromCartUseCase) {
+  return async (c: Ctx) => {
+    const { code } = c.req.valid('param' as never) as { code: string };
+    return c.json(await useCase.execute(c.get('organizationId'), code), 200);
+  };
+}
+
+export function clearCartController(useCase: ClearCartUseCase) {
+  return async (c: Ctx) => {
+    await useCase.execute(c.get('organizationId'));
+    return c.body(null, 204);
   };
 }
 

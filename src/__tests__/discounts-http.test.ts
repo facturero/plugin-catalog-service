@@ -25,6 +25,7 @@ import {
 import { ListMyDiscountRedemptionsUseCase } from '../application/use-cases/list-my-discount-redemptions';
 import { GetSubscriptionUseCase } from '../application/use-cases/get-subscription';
 import { DEFAULT_PRICING_POLICY } from '../application/pricing-policy';
+import { AddToCartUseCase, ClearCartUseCase, GetCartUseCase, RemoveFromCartUseCase } from '../application/use-cases/cart';
 import { createInMemoryUow, seedExampleWorld } from './helpers';
 
 function montar() {
@@ -54,6 +55,10 @@ function montar() {
       setDiscountActive: new SetDiscountActiveUseCase(uow),
       listMyDiscountRedemptions: new ListMyDiscountRedemptionsUseCase(r.discounts, r.discountRedemptions),
       getSubscription: new GetSubscriptionUseCase(uow, DEFAULT_PRICING_POLICY),
+      getCart: new GetCartUseCase(r.carts, r.plugins),
+      addToCart: new AddToCartUseCase(uow),
+      removeFromCart: new RemoveFromCartUseCase(uow),
+      clearCart: new ClearCartUseCase(uow),
     },
     corsOrigin: '*',
   };
@@ -236,5 +241,30 @@ describe('HTTP · carrito de módulos', () => {
     const { llamar } = montar();
     expect((await llamar('POST', '/organizations/me/plugins/cart/quote', { body: { codes: [] } })).status).toBe(422);
     expect((await llamar('POST', '/organizations/me/plugins/cart/activate', { body: { codes: [] } })).status).toBe(422);
+  });
+
+  it('el carrito guardado: agregar, ver, quitar y vaciar por HTTP', async () => {
+    const { llamar, a } = montar();
+    const base = '/organizations/me/plugins/cart';
+
+    expect((await llamar('PUT', base + '/items/' + a.code)).status).toBe(200);
+    const lista = await (await llamar('GET', base)).json();
+    expect(lista).toMatchObject([{ code: 'mod.a' }]);
+
+    expect((await llamar('DELETE', base + '/items/' + a.code)).status).toBe(200);
+    expect(await (await llamar('GET', base)).json()).toEqual([]);
+
+    await llamar('PUT', base + '/items/' + a.code);
+    expect((await llamar('DELETE', base)).status).toBe(204);
+    expect(await (await llamar('GET', base)).json()).toEqual([]);
+  });
+
+  it('modificar el carrito exige plugins:manage; verlo, no', async () => {
+    const { llamar, a } = montar();
+    const base = '/organizations/me/plugins/cart';
+    expect((await llamar('PUT', base + '/items/' + a.code, { permisos: 'x:y' })).status).toBe(403);
+    expect((await llamar('DELETE', base + '/items/' + a.code, { permisos: 'x:y' })).status).toBe(403);
+    expect((await llamar('DELETE', base, { permisos: 'x:y' })).status).toBe(403);
+    expect((await llamar('GET', base, { permisos: 'x:y' })).status).toBe(200);
   });
 });

@@ -32,6 +32,10 @@ import {
   activatePluginsBatchController,
   cartQuoteController,
   cartActivateController,
+  getCartController,
+  addToCartController,
+  removeFromCartController,
+  clearCartController,
   chooseBusinessProfileController,
   deactivatePluginController,
   cancelPluginDeactivationController,
@@ -56,6 +60,7 @@ import {
 } from '../../application/use-cases/manage-discounts';
 import { ListMyDiscountRedemptionsUseCase } from '../../application/use-cases/list-my-discount-redemptions';
 import { GetSubscriptionUseCase } from '../../application/use-cases/get-subscription';
+import { AddToCartUseCase, ClearCartUseCase, GetCartUseCase, RemoveFromCartUseCase } from '../../application/use-cases/cart';
 import {
   createDiscountController,
   getSubscriptionController,
@@ -91,6 +96,10 @@ export interface AppDependencies {
     setDiscountActive: SetDiscountActiveUseCase;
     listMyDiscountRedemptions: ListMyDiscountRedemptionsUseCase;
     getSubscription: GetSubscriptionUseCase;
+    getCart: GetCartUseCase;
+    addToCart: AddToCartUseCase;
+    removeFromCart: RemoveFromCartUseCase;
+    clearCart: ClearCartUseCase;
   };
   corsOrigin: string;
 }
@@ -143,6 +152,28 @@ export function organizationRoutes(deps: AppDependencies): Hono<Vars> {
 
   // El carrito: cotizar y activar varios módulos juntos. Van ANTES de las rutas con `:code`, que de otro modo las tomarían
   // por un módulo llamado «cart».
+  // El carrito guardado de la organización (lo que se dejó pendiente de activar).
+  r.get('/organizations/me/plugins/cart',
+    requireOrganization(),
+    getCartController(useCases.getCart));
+
+  r.put('/organizations/me/plugins/cart/items/:code',
+    requireOrganization(),
+    requirePermission('plugins:manage'),
+    validateParams(pluginCodeParamSchema),
+    addToCartController(useCases.addToCart));
+
+  r.delete('/organizations/me/plugins/cart/items/:code',
+    requireOrganization(),
+    requirePermission('plugins:manage'),
+    validateParams(pluginCodeParamSchema),
+    removeFromCartController(useCases.removeFromCart));
+
+  r.delete('/organizations/me/plugins/cart',
+    requireOrganization(),
+    requirePermission('plugins:manage'),
+    clearCartController(useCases.clearCart));
+
   r.post('/organizations/me/plugins/cart/quote',
     requireOrganization(),
     validateJson(cartSchema),
