@@ -4,6 +4,7 @@ import { join } from 'node:path';
 
 interface Modulo {
   id: string;
+  included?: boolean;
   status: 'hecho' | 'parcial' | 'falta';
   depends_on?: string[];
 }
@@ -12,7 +13,8 @@ const leer = <T>(archivo: string): T => JSON.parse(readFileSync(join(process.cwd
 const catalogo = leer<{ infra_existente: Array<{ id: string }>; modulos: Modulo[] }>('plugins-dependencias.json');
 const { precios_cents: precios } = leer<{ precios_cents: Record<string, number> }>('plugins-precios.json');
 
-const nucleo = new Set(catalogo.infra_existente.map((i) => i.id));
+// Núcleo = la infraestructura y los módulos base gratuitos «incluidos»: no se venden y siempre están activos.
+const nucleo = new Set([...catalogo.infra_existente.map((i) => i.id), ...catalogo.modulos.filter((m) => m.included).map((m) => m.id)]);
 const porId = new Map(catalogo.modulos.map((m) => [m.id, m]));
 
 /** Lo que cuesta activar un módulo desde cero: él mismo más todo lo que arrastra (las dependencias del núcleo valen 0). */
@@ -26,7 +28,7 @@ function totalDesdeCero(id: string, vistos = new Set<string>()): number {
 
 describe('precios de los módulos (seed/plugins-precios.json)', () => {
   it('todo módulo vendible tiene precio, y nada que no exista', () => {
-    const sinPrecio = catalogo.modulos.map((m) => m.id).filter((id) => !(id in precios));
+    const sinPrecio = catalogo.modulos.filter((m) => !m.included).map((m) => m.id).filter((id) => !(id in precios));
     const sinModulo = Object.keys(precios).filter((id) => !porId.has(id));
     expect(sinPrecio, 'módulos sin precio: ' + sinPrecio.join(', ')).toEqual([]);
     expect(sinModulo, 'precios de módulos que no existen: ' + sinModulo.join(', ')).toEqual([]);

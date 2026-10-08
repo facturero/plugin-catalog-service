@@ -3,6 +3,8 @@ import { GetCatalogUseCase } from '../application/use-cases/get-catalog';
 import { ActivatePluginUseCase } from '../application/use-cases/activate-plugin';
 import { DeactivatePluginUseCase } from '../application/use-cases/deactivate-plugin';
 import { CorePluginNotConfigurableError } from '../domain/errors';
+import { GetOrganizationPluginsUseCase } from '../application/use-cases/get-organization-plugins';
+import { OrganizationPlugin } from '../domain/entities';
 import { createInMemoryUow, createPlugin } from './helpers';
 
 /**
@@ -55,5 +57,33 @@ describe('plugins del núcleo', () => {
     expect(core.buildStatus).toBe('disponible');
     expect(core.isActive).toBe(true);
     expect(core.isBuyable).toBe(false);
+  });
+
+  it('el listado de la organización lo da por activo aunque no haya fila (así el gateway deja pasar sus rutas)', async () => {
+    const { uow, core, vendible } = await seedWorld();
+    const lista = await new GetOrganizationPluginsUseCase(
+      uow.repos.organizationPlugins,
+      uow.repos.plugins,
+      uow.repos.translations,
+      uow.repos.organizationTrials,
+    ).execute('org-1');
+
+    const incluido = lista.find((r) => r.pluginCode === core.code);
+    expect(incluido).toMatchObject({ status: 'active', activationSource: 'included', deactivateAt: null, periodEndsAt: null });
+    expect(lista.find((r) => r.pluginCode === vendible.code)).toBeUndefined(); // lo vendible sí necesita su fila
+  });
+
+  it('una fila vieja de un módulo que ya pasó a incluido no aparece dos veces', async () => {
+    const { uow, core } = await seedWorld();
+    await uow.repos.organizationPlugins.save(OrganizationPlugin.activateDirect('org-1', core.id));
+
+    const lista = await new GetOrganizationPluginsUseCase(
+      uow.repos.organizationPlugins,
+      uow.repos.plugins,
+      uow.repos.translations,
+      uow.repos.organizationTrials,
+    ).execute('org-1');
+
+    expect(lista.filter((r) => r.pluginCode === core.code)).toHaveLength(1);
   });
 });

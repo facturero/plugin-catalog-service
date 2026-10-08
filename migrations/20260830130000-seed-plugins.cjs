@@ -43,7 +43,10 @@ module.exports = {
       build_status: 'disponible',
       is_core: true,
     }));
-    const coreIds = new Set(coreRows.map((r) => r.code));
+    const coreIds = new Set([
+      ...coreRows.map((r) => r.code),
+      ...data.modulos.filter((m) => m.included === true).map((m) => m.id),
+    ]);
 
     const moduleRows = data.modulos.map((m) => ({
       code: m.id,
@@ -51,7 +54,8 @@ module.exports = {
       category: m.category,
       description: m.description,
       build_status: statusToBuildStatus[m.status] || 'en_construccion',
-      is_core: false,
+      // `included`: base gratuita que todos necesitan; va incluida en la plataforma (siempre activa, no se vende ni se apaga).
+      is_core: m.included === true,
     }));
 
     const desired = [...coreRows, ...moduleRows];

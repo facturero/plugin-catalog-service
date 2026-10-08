@@ -63,7 +63,8 @@ export class GetBusinessProfileRecommendationsUseCase {
       const plugin = byId.get(pp.pluginId);
       if (!plugin) continue;
 
-      const alreadyActive = activeIds.has(plugin.id);
+      // Lo incluido en la plataforma ya está activo para todos: no hay nada que activar ni cobrar.
+      const alreadyActive = activeIds.has(plugin.id) || plugin.isCore;
       const text = localizeText(
         { name: plugin.name, category: plugin.category, description: plugin.description },
         translations.get(plugin.id),

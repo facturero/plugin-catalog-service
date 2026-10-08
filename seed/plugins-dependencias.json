@@ -47,6 +47,7 @@
   "modulos": [
     {
       "id": "infra.catalog_products",
+      "included": true,
       "name": "Catalogo de productos (incluye categorias y unidades de medida)",
       "category": "Inventario y Cadena de Suministro",
       "status": "hecho",
@@ -72,6 +73,7 @@
     },
     {
       "id": "admin.org_settings",
+      "included": true,
       "name": "Configuracion general de la organizacion",
       "category": "Administracion del Sistema",
       "status": "parcial",
@@ -96,6 +98,7 @@
     },
     {
       "id": "org.establishments",
+      "included": true,
       "name": "Establecimientos y puntos de emision",
       "category": "Administracion del Sistema",
       "status": "hecho",
@@ -108,6 +111,7 @@
     },
     {
       "id": "crm.contacts",
+      "included": true,
       "name": "Gestion de contactos y cuentas",
       "category": "Ventas y CRM",
       "status": "hecho",
@@ -206,6 +210,7 @@
     },
     {
       "id": "finance.electronic_certificate",
+      "included": true,
       "name": "Certificado electronico (.p12)",
       "category": "Facturacion y Finanzas",
       "status": "hecho",
@@ -761,6 +766,7 @@
     },
     {
       "id": "comm.notifications",
+      "included": true,
       "name": "Notificaciones push/email",
       "category": "Comunicacion Interna",
       "status": "parcial",

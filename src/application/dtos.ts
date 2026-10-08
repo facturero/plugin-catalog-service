@@ -34,7 +34,8 @@ export interface OrganizationPluginDTO {
   pluginId: string;
   pluginCode?: string;
   pluginName?: string;
-  activationSource: 'direct' | 'dependency';
+  /** `included`: viene con la plataforma (núcleo y módulos base gratuitos); no se compra ni se apaga. */
+  activationSource: 'direct' | 'dependency' | 'included';
   requiredByPluginId: string | null;
   status: 'active' | 'disabled';
   activatedAt: Date;
