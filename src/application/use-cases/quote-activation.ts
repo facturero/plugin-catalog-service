@@ -8,7 +8,8 @@ import {
   PluginTranslationRepository,
 } from '../../domain/repositories';
 import { BASE_LOCALE, localizeText } from '../localization';
-import { DiscountRedemptionRepository, DiscountRepository } from '../../domain/repositories';
+import { DiscountRedemptionRepository, DiscountRepository, OrganizationTrialRepository } from '../../domain/repositories';
+import { PricingPolicy, vatCents } from '../pricing-policy';
 import { AppError } from '../../domain/errors';
 import { resolveDiscount } from '../discount-pricing';
 
@@ -20,6 +21,8 @@ export class QuoteActivationUseCase {
     private readonly translations: PluginTranslationRepository,
     private readonly discounts?: DiscountRepository,
     private readonly redemptions?: DiscountRedemptionRepository,
+    private readonly trials?: OrganizationTrialRepository,
+    private readonly policy?: PricingPolicy,
   ) {}
 
   async execute(
@@ -100,6 +103,22 @@ export class QuoteActivationUseCase {
         if (!(err instanceof AppError)) throw err;
         quote.discount_error = { code: err.code, message: err.message };
       }
+    }
+
+    if (this.policy) {
+      const monthly = quote.total_after_discount ?? quote.total_monthly;
+      const vat = vatCents(monthly, this.policy.vatBps);
+      quote.vat_percent = this.policy.vatBps / 100;
+      quote.vat_cents = vat;
+      quote.total_with_vat = monthly + vat;
+
+      const trial = this.trials ? await this.trials.find(organizationId) : null;
+      const now = new Date();
+      if (trial) {
+        quote.trial = { active: trial.isActiveAt(now), ends_at: trial.endsAt.toISOString(), days_left: trial.daysLeftAt(now) };
+      }
+      // Durante la prueba no se paga nada; el precio de arriba es lo que pagará cuando termine.
+      quote.due_today = trial?.isActiveAt(now) ? 0 : quote.total_with_vat;
     }
 
     return quote;

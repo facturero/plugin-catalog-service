@@ -23,8 +23,30 @@ describe('Discount · cálculo', () => {
     expect(r.totalCents).toBe(850);
   });
 
-  it('monto fijo: rebaja una vez sobre el subtotal elegible', () => {
+  it('monto fijo (por defecto POR MÓDULO): resta 5,00 a cada módulo al mes', () => {
     const r = descuento({ kind: 'fixed', value: 500 }).compute([
+      { pluginCode: 'a', priceCents: 2000 },
+      { pluginCode: 'b', priceCents: 1000 },
+    ]);
+    expect(r.lines.map((l) => l.discountCents)).toEqual([500, 500]);
+    expect(r.discountCents).toBe(1000);
+    expect(r.totalCents).toBe(2000);
+  });
+
+  it('monto fijo por módulo: a un módulo más barato que el monto le quita solo lo que cuesta', () => {
+    const r = descuento({ kind: 'fixed', value: 500 }).compute([
+      { pluginCode: 'a', priceCents: 2000 },
+      { pluginCode: 'b', priceCents: 299 },
+    ]);
+    expect(r.lines).toEqual([
+      { pluginCode: 'a', priceCents: 2000, discountCents: 500, finalCents: 1500 },
+      { pluginCode: 'b', priceCents: 299, discountCents: 299, finalCents: 0 },
+    ]);
+    expect(r.totalCents).toBe(1500);
+  });
+
+  it("monto fijo «total»: rebaja UNA vez sobre el subtotal elegible", () => {
+    const r = descuento({ kind: 'fixed', value: 500, fixedAppliesTo: 'total' }).compute([
       { pluginCode: 'a', priceCents: 2000 },
       { pluginCode: 'b', priceCents: 1000 },
     ]);
@@ -32,7 +54,16 @@ describe('Discount · cálculo', () => {
     expect(r.totalCents).toBe(2500);
   });
 
-  it('monto fijo mayor que el subtotal: nunca deja un total negativo', () => {
+  it('monto fijo por módulo con alcance a ciertos módulos: solo esos', () => {
+    const r = descuento({ kind: 'fixed', value: 200, pluginCodes: ['b'] }).compute([
+      { pluginCode: 'a', priceCents: 2000 },
+      { pluginCode: 'b', priceCents: 1000 },
+    ]);
+    expect(r.lines.map((l) => l.pluginCode)).toEqual(['b']);
+    expect(r.totalCents).toBe(2800);
+  });
+
+  it('monto fijo mayor que el precio: nunca deja un total negativo', () => {
     const r = descuento({ kind: 'fixed', value: 99999 }).compute([{ pluginCode: 'a', priceCents: 499 }]);
     expect(r.discountCents).toBe(499);
     expect(r.totalCents).toBe(0);

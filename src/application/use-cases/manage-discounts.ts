@@ -1,4 +1,4 @@
-import { Discount, DiscountKind } from '../../domain/discount';
+import { Discount, DiscountKind, FixedAppliesTo } from '../../domain/discount';
 import { DiscountCodeAlreadyExistsError, DiscountNotFoundError, ValidationError } from '../../domain/errors';
 import { Repositories } from '../../domain/repositories';
 import { UnitOfWork } from '../ports';
@@ -14,6 +14,8 @@ export interface DiscountDTO {
   percent: number | null;
   /** Lo mismo, en centavos. Solo en descuentos de monto fijo. */
   amountCents: number | null;
+  /** Solo en monto fijo: 'plugin' resta a cada módulo; 'total' resta una vez al total. */
+  fixedAppliesTo: FixedAppliesTo;
   pluginCodes: string[];
   validFrom: string | null;
   validUntil: string | null;
@@ -36,6 +38,7 @@ export function toDiscountDTO(d: Discount): DiscountDTO {
     value: d.value,
     percent: d.kind === 'percent' ? d.value / 100 : null,
     amountCents: d.kind === 'fixed' ? d.value : null,
+    fixedAppliesTo: d.fixedAppliesTo,
     pluginCodes: d.pluginCodes,
     validFrom: d.validFrom ? d.validFrom.toISOString() : null,
     validUntil: d.validUntil ? d.validUntil.toISOString() : null,
@@ -63,6 +66,7 @@ function eventPayload(d: Discount): Record<string, unknown> {
     name: d.name,
     kind: d.kind,
     value: d.value,
+    fixedAppliesTo: d.fixedAppliesTo,
     pluginCodes: d.pluginCodes,
     validFrom: d.validFrom,
     validUntil: d.validUntil,
@@ -78,6 +82,7 @@ export interface CreateDiscountInput {
   name: string;
   kind: DiscountKind;
   value: number;
+  fixedAppliesTo?: FixedAppliesTo;
   pluginCodes?: string[];
   validFrom?: Date | null;
   validUntil?: Date | null;

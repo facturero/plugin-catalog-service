@@ -14,6 +14,8 @@ import {
   UpdateDiscountUseCase,
 } from './application/use-cases/manage-discounts';
 import { ListMyDiscountRedemptionsUseCase } from './application/use-cases/list-my-discount-redemptions';
+import { GetSubscriptionUseCase } from './application/use-cases/get-subscription';
+import { PricingPolicy } from './application/pricing-policy';
 import { DeactivatePluginUseCase } from './application/use-cases/deactivate-plugin';
 import { RequestCustomPluginUseCase } from './application/use-cases/request-custom-plugin';
 import { ListMyCustomRequestsUseCase } from './application/use-cases/list-my-custom-requests';
@@ -34,6 +36,8 @@ async function bootstrap(): Promise<void> {
   let relay: OutboxRelay | undefined;
   const unitOfWork = new SequelizeUnitOfWork((tx) => relay?.attachToTransaction(tx));
   const repos = buildRepositories();
+  // Prueba gratis de la organización e IVA: vienen del entorno (TRIAL_MONTHS, VAT_BPS).
+  const pricingPolicy: PricingPolicy = { trialMonths: config.TRIAL_MONTHS, vatBps: config.VAT_BPS };
 
   const app = createApp({
     useCases: {
@@ -55,6 +59,8 @@ async function bootstrap(): Promise<void> {
         repos.translations,
         repos.discounts,
         repos.discountRedemptions,
+        repos.organizationTrials,
+        pricingPolicy,
       ),
       activatePlugin: new ActivatePluginUseCase(unitOfWork),
       deactivatePlugin: new DeactivatePluginUseCase(unitOfWork),
@@ -83,6 +89,7 @@ async function bootstrap(): Promise<void> {
       updateDiscount: new UpdateDiscountUseCase(unitOfWork),
       setDiscountActive: new SetDiscountActiveUseCase(unitOfWork),
       listMyDiscountRedemptions: new ListMyDiscountRedemptionsUseCase(repos.discounts, repos.discountRedemptions),
+      getSubscription: new GetSubscriptionUseCase(unitOfWork, pricingPolicy),
     },
     corsOrigin: config.CORS_ORIGIN,
   });

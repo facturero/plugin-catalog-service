@@ -6,6 +6,7 @@ import {
   UpdateDiscountUseCase,
 } from '../../application/use-cases/manage-discounts';
 import { ListMyDiscountRedemptionsUseCase } from '../../application/use-cases/list-my-discount-redemptions';
+import { GetSubscriptionUseCase } from '../../application/use-cases/get-subscription';
 import { ContextVariables } from './middlewares';
 
 type Ctx = Context<{ Variables: ContextVariables }>;
@@ -39,4 +40,20 @@ export function setDiscountActiveController(useCase: SetDiscountActiveUseCase, a
 
 export function listMyDiscountRedemptionsController(useCase: ListMyDiscountRedemptionsUseCase) {
   return async (c: Ctx) => c.json(await useCase.execute(c.get('organizationId')), 200);
+}
+
+/**
+ * Estado comercial de la organización (prueba gratis e IVA). Lo llama el frontend al cargar: si quien llama puede gestionar
+ * módulos (el administrador) y la prueba no ha empezado, arranca. Cualquier otro usuario solo lee.
+ */
+export function getSubscriptionController(useCase: GetSubscriptionUseCase) {
+  return async (c: Ctx) => {
+    const permissions = c.get('permissions') ?? [];
+    const result = await useCase.execute({
+      organizationId: c.get('organizationId'),
+      userId: c.get('userId') ?? null,
+      canManagePlugins: permissions.includes('plugins:manage') || permissions.includes('*'),
+    });
+    return c.json(result, 200);
+  };
 }

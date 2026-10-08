@@ -17,6 +17,9 @@ import { DiscountRejectedError, ValidationError } from './errors';
  */
 export type DiscountKind = 'percent' | 'fixed';
 
+/** En un descuento de monto fijo: se resta a CADA módulo (lo normal) o una sola vez al total. En porcentaje es lo mismo. */
+export type FixedAppliesTo = 'plugin' | 'total';
+
 export interface DiscountProps {
   id: string;
   code: string;
@@ -24,6 +27,7 @@ export interface DiscountProps {
   kind: DiscountKind;
   /** percent: puntos básicos (1..10000). fixed: centavos (>0). */
   value: number;
+  fixedAppliesTo: FixedAppliesTo;
   /** Códigos de los módulos a los que aplica. Vacío = todos. */
   pluginCodes: string[];
   validFrom: Date | null;
@@ -71,6 +75,7 @@ export class Discount {
     name: string;
     kind: DiscountKind;
     value: number;
+    fixedAppliesTo?: FixedAppliesTo;
     pluginCodes?: string[];
     validFrom?: Date | null;
     validUntil?: Date | null;
@@ -87,6 +92,7 @@ export class Discount {
       name: params.name.trim(),
       kind: params.kind,
       value: params.value,
+      fixedAppliesTo: params.fixedAppliesTo ?? 'plugin',
       pluginCodes: [...new Set(params.pluginCodes ?? [])],
       validFrom: params.validFrom ?? null,
       validUntil: params.validUntil ?? null,
@@ -118,6 +124,7 @@ export class Discount {
   get name(): string { return this.props.name; }
   get kind(): DiscountKind { return this.props.kind; }
   get value(): number { return this.props.value; }
+  get fixedAppliesTo(): FixedAppliesTo { return this.props.fixedAppliesTo; }
   get pluginCodes(): string[] { return [...this.props.pluginCodes]; }
   get validFrom(): Date | null { return this.props.validFrom; }
   get validUntil(): Date | null { return this.props.validUntil; }
@@ -199,6 +206,24 @@ export class Discount {
 
     if (subtotal === 0) {
       throw new DiscountRejectedError('not_applicable');
+    }
+
+    // Monto fijo POR MÓDULO: cada línea elegible baja `value` (sin pasar de su propio precio). Es lo que se entiende por
+    // «$2 menos al mes a cada módulo». Se calcula línea por línea, así que no hay reparto que redondear.
+    if (this.props.kind === 'fixed' && this.props.fixedAppliesTo === 'plugin') {
+      const perLine = eligible.map((l) => ({
+        pluginCode: l.pluginCode,
+        priceCents: l.priceCents,
+        discountCents: Math.min(this.props.value, l.priceCents),
+        finalCents: l.priceCents - Math.min(this.props.value, l.priceCents),
+      }));
+      const total = perLine.reduce((sum, l) => sum + l.discountCents, 0);
+      return {
+        lines: perLine,
+        subtotalCents: subtotal,
+        discountCents: total,
+        totalCents: lines.reduce((sum, l) => sum + l.priceCents, 0) - total,
+      };
     }
 
     const wanted =

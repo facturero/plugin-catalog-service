@@ -22,6 +22,8 @@ import {
   UpdateDiscountUseCase,
 } from '../application/use-cases/manage-discounts';
 import { ListMyDiscountRedemptionsUseCase } from '../application/use-cases/list-my-discount-redemptions';
+import { GetSubscriptionUseCase } from '../application/use-cases/get-subscription';
+import { DEFAULT_PRICING_POLICY } from '../application/pricing-policy';
 import { createInMemoryUow, seedExampleWorld } from './helpers';
 
 function montar() {
@@ -32,7 +34,7 @@ function montar() {
     useCases: {
       getCatalog: new GetCatalogUseCase(r.plugins, r.dependencies, r.organizationPlugins, r.translations),
       getOrganizationPlugins: new GetOrganizationPluginsUseCase(r.organizationPlugins, r.plugins, r.translations),
-      quoteActivation: new QuoteActivationUseCase(r.plugins, r.dependencies, r.organizationPlugins, r.translations, r.discounts, r.discountRedemptions),
+      quoteActivation: new QuoteActivationUseCase(r.plugins, r.dependencies, r.organizationPlugins, r.translations, r.discounts, r.discountRedemptions, r.organizationTrials, DEFAULT_PRICING_POLICY),
       activatePlugin: new ActivatePluginUseCase(uow),
       deactivatePlugin: new DeactivatePluginUseCase(uow),
       requestCustomPlugin: new RequestCustomPluginUseCase(uow),
@@ -49,6 +51,7 @@ function montar() {
       updateDiscount: new UpdateDiscountUseCase(uow),
       setDiscountActive: new SetDiscountActiveUseCase(uow),
       listMyDiscountRedemptions: new ListMyDiscountRedemptionsUseCase(r.discounts, r.discountRedemptions),
+      getSubscription: new GetSubscriptionUseCase(uow, DEFAULT_PRICING_POLICY),
     },
     corsOrigin: '*',
   };
@@ -172,5 +175,38 @@ describe('HTTP · usar un código', () => {
     const res = await m.llamar('POST', `/organizations/me/plugins/${m.c.code}/activate`, { body: { discountCode: 'VIEJO' } });
     expect(res.status).toBe(422);
     expect(await res.json()).toMatchObject({ code: 'DISCOUNT_EXPIRED' });
+  });
+});
+
+describe('HTTP · prueba gratis e IVA', () => {
+  it('el administrador (plugins:manage) arranca la prueba al consultar; los demás solo leen', async () => {
+    const { llamar } = montar();
+
+    const vendedor = await llamar('GET', '/organizations/me/subscription', { permisos: 'invoice:create' });
+    expect(await vendedor.json()).toMatchObject({ trial: null, vat_percent: 15 });
+
+    const admin1 = await llamar('GET', '/organizations/me/subscription');
+    const cuerpo = (await admin1.json()) as { trial: { active: boolean; days_left: number } };
+    expect(admin1.status).toBe(200);
+    expect(cuerpo.trial.active).toBe(true);
+    expect(cuerpo.trial.days_left).toBeGreaterThan(85);
+
+    const vendedorDespues = await llamar('GET', '/organizations/me/subscription', { permisos: 'invoice:create' });
+    expect(((await vendedorDespues.json()) as { trial: unknown }).trial).not.toBeNull();
+  });
+
+  it('la cotización trae el IVA y lo que se paga hoy', async () => {
+    const { llamar, a } = montar();
+    await llamar('GET', '/organizations/me/subscription');
+    const res = await llamar('GET', `/organizations/me/plugins/${a.code}/quote`);
+    expect(await res.json()).toMatchObject({ total_monthly: 3500, vat_percent: 15, vat_cents: 525, total_with_vat: 4025, due_today: 0 });
+  });
+
+  it('crear un descuento de monto fijo por módulo (por defecto) o sobre el total', async () => {
+    const { llamar } = montar();
+    const porModulo = await llamar('POST', '/admin/discounts', { ...admin, body: { code: 'DOSXMODULO', name: 'x', amountCents: 200 } });
+    expect(await porModulo.json()).toMatchObject({ kind: 'fixed', fixedAppliesTo: 'plugin' });
+    const total = await llamar('POST', '/admin/discounts', { ...admin, body: { code: 'DOSTOTAL', name: 'x', amountCents: 200, fixedAppliesTo: 'total' } });
+    expect(await total.json()).toMatchObject({ kind: 'fixed', fixedAppliesTo: 'total' });
   });
 });

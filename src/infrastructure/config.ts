@@ -11,6 +11,10 @@ const schema = z.object({
   DB_NAME: z.string().min(1),
   CORS_ORIGIN: z.string().default('*'),
   RABBITMQ_URL: z.string().optional(),
+  /** Meses de prueba gratis de TODA la organización (no por módulo), desde el primer ingreso de su administrador. */
+  TRIAL_MONTHS: z.coerce.number().int().min(0).max(24).default(3),
+  /** IVA que se suma a los precios de los módulos, en puntos básicos (1500 = 15 %). */
+  VAT_BPS: z.coerce.number().int().min(0).max(10000).default(1500),
 });
 
 const parsed = schema.safeParse(process.env);
@@ -35,6 +39,8 @@ export interface AppConfig {
   DB_NAME: string;
   CORS_ORIGIN: string;
   RABBITMQ_URL?: string;
+  TRIAL_MONTHS: number;
+  VAT_BPS: number;
 }
 
 export const config: AppConfig = {
@@ -47,4 +53,6 @@ export const config: AppConfig = {
   DB_NAME: env.DB_NAME,
   CORS_ORIGIN: env.CORS_ORIGIN,
   RABBITMQ_URL: env.RABBITMQ_URL,
+  TRIAL_MONTHS: env.TRIAL_MONTHS,
+  VAT_BPS: env.VAT_BPS,
 };

@@ -13,6 +13,25 @@
   trabajar y, si costaran, inflarían la cotización de lo que de verdad se vende (la cotización suma las dependencias).
 - Los módulos que aún no están construidos llevan precio objetivo, pero no se pueden comprar mientras estén «en construcción».
 
+## Prueba gratis (3 meses, de toda la organización)
+
+- **Es de la organización, no de cada módulo.** Arranca una sola vez, con el **primer ingreso del administrador** (quien tiene el
+  permiso `plugins:manage`), y dura `TRIAL_MONTHS` meses (3 por defecto). Mientras dura, todos los módulos disponibles se
+  activan sin pagar. Activar un módulo nuevo en el mes 2 **no** da otros 3 meses, y volver a ingresar no reinicia nada.
+- **Cómo arranca:** el frontend consulta `GET /organizations/me/subscription` al cargar. Si quien consulta puede gestionar
+  módulos y no había prueba, la crea (idempotente: dos ingresos a la vez crean una sola, y se publica `pricing.trial.started`).
+  Si lo consulta alguien sin ese permiso, solo lee: no arranca la prueba de la organización.
+- **Organizaciones que ya existían** cuando se lanzó esto: su prueba arranca la primera vez que su administrador ingrese
+  DESPUÉS del lanzamiento, no desde que se crearon.
+- **Un descuento no se gasta durante la prueba:** su duración (`durationMonths`) cuenta desde que termina la prueba.
+- La cotización informa `trial` y `due_today` (0 mientras dure la prueba) además del total que se pagará después.
+
+## IVA
+
+Los precios del JSON son **sin IVA**. El servicio suma `VAT_BPS` (1500 = 15 %, Ecuador) y lo informa en la cotización:
+`vat_percent`, `vat_cents` (calculado sobre el total YA descontado, redondeado al centavo) y `total_with_vat`. El catálogo
+muestra «+ IVA». Hoy es una sola tasa para todas las organizaciones, tomada del entorno y no de `tax-service`.
+
 ## Descuentos
 
 Un descuento se canjea con un **código** y rebaja el precio mensual de lo que se activa en ese momento (el módulo y las
@@ -21,6 +40,7 @@ dependencias que todavía no estaban activas; lo ya activo no cuesta nada y no s
 | Qué | Cómo |
 |---|---|
 | Tipo | `percent` (15 = 15 %, hasta dos decimales) o `amountCents` (500 = 5,00 USD; nunca baja de cero) |
+| Monto fijo: a qué se resta | `fixedAppliesTo`: `plugin` (por defecto) resta ese monto **a cada módulo** al mes (sin pasar de su precio); `total` lo resta **una sola vez** al total. En porcentaje es lo mismo. |
 | Alcance | todos los módulos, o una lista de códigos de módulo (`pluginCodes`) |
 | Vigencia | `validFrom` / `validUntil` (ISO 8601 con zona horaria) |
 | Topes | `maxRedemptions` (global) y `perOrganizationLimit` (1 por defecto) |
@@ -40,6 +60,7 @@ GET  /organizations/me/plugins/:code/quote?discountCode=VEINTE
      → la cotización de siempre + { discount, total_after_discount }  ó  { discount_error: { code, message } }
 POST /organizations/me/plugins/:code/activate        cuerpo opcional: { "discountCode": "VEINTE" }
 GET  /organizations/me/discount-redemptions          los descuentos que ya canjeó esta organización
+GET  /organizations/me/subscription                  prueba gratis e IVA (el administrador la arranca la primera vez)
 ```
 
 Un código malo no tumba la cotización (200 con `discount_error`), pero sí impide activar (404 si no existe o es de otra

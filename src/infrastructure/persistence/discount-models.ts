@@ -7,6 +7,7 @@ export class DiscountModel extends Model<InferAttributes<DiscountModel>, InferCr
   declare name: string;
   declare kind: 'percent' | 'fixed';
   declare value: number;
+  declare fixed_applies_to: 'plugin' | 'total';
   declare valid_from: Date | null;
   declare valid_until: Date | null;
   declare max_redemptions: number | null;
@@ -27,6 +28,7 @@ DiscountModel.init(
     name: { type: DataTypes.STRING(150), allowNull: false },
     kind: { type: DataTypes.ENUM('percent', 'fixed'), allowNull: false },
     value: { type: DataTypes.INTEGER, allowNull: false },
+    fixed_applies_to: { type: DataTypes.ENUM('plugin', 'total'), allowNull: false, defaultValue: 'plugin' },
     valid_from: { type: DataTypes.DATE, allowNull: true },
     valid_until: { type: DataTypes.DATE, allowNull: true },
     max_redemptions: { type: DataTypes.INTEGER, allowNull: true },
@@ -88,4 +90,26 @@ DiscountRedemptionModel.init(
     expires_at: { type: DataTypes.DATE, allowNull: true },
   },
   { sequelize, tableName: 'discount_redemptions', timestamps: false },
+);
+
+export class OrganizationTrialModel extends Model<
+  InferAttributes<OrganizationTrialModel>,
+  InferCreationAttributes<OrganizationTrialModel>
+> {
+  declare organization_id: string;
+  declare started_at: Date;
+  declare ends_at: Date;
+  declare started_by_user_id: string | null;
+  declare created_at: Date;
+}
+
+OrganizationTrialModel.init(
+  {
+    organization_id: { type: DataTypes.CHAR(36), primaryKey: true },
+    started_at: { type: DataTypes.DATE, allowNull: false },
+    ends_at: { type: DataTypes.DATE, allowNull: false },
+    started_by_user_id: { type: DataTypes.CHAR(36), allowNull: true },
+    created_at: { type: DataTypes.DATE, allowNull: false },
+  },
+  { sequelize, tableName: 'organization_trials', timestamps: false },
 );

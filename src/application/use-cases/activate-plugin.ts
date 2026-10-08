@@ -107,6 +107,9 @@ export class ActivatePluginUseCase {
       if (applied) {
         const now = new Date();
         const { discount, result } = applied;
+        // Si la prueba sigue activa, el descuento (y su duración) cuentan desde que termina: la prueba no lo gasta.
+        const trial = await repos.organizationTrials.find(organizationId);
+        const startsAt = trial && trial.isActiveAt(now) ? trial.endsAt : now;
         await repos.discountRedemptions.add({
           id: randomUUID(),
           discountId: discount.id,
@@ -117,7 +120,7 @@ export class ActivatePluginUseCase {
           discountCents: result.discountCents,
           finalCents: result.totalCents,
           redeemedAt: now,
-          expiresAt: redemptionExpiry(discount, now),
+          expiresAt: redemptionExpiry(discount, startsAt),
         });
         discount.registerRedemption();
         await repos.discounts.save(discount);
@@ -135,6 +138,7 @@ export class ActivatePluginUseCase {
             discountCents: result.discountCents,
             finalCents: result.totalCents,
             durationMonths: discount.durationMonths,
+            startsAt,
           },
           occurredAt: now,
         });

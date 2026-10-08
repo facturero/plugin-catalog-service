@@ -69,8 +69,18 @@ export interface QuoteDTO {
   discount?: QuoteDiscountDTO;
   /** Solo si se pidió con un código y NO vale (vencido, agotado, no aplica...). La cotización normal viene igual. */
   discount_error?: { code: string; message: string };
-  /** Solo con descuento: lo que se pagaría al mes. */
+  /** Solo con descuento: lo que se pagaría al mes, sin IVA. */
   total_after_discount?: number;
+  /** Los campos de abajo salen siempre que el servicio tenga política comercial (producción): IVA y prueba gratis. */
+  vat_percent?: number;
+  /** IVA mensual, sobre el total con descuento si lo hay. */
+  vat_cents?: number;
+  /** Lo que se pagaría al mes con IVA, pasada la prueba. */
+  total_with_vat?: number;
+  /** Prueba gratis de la organización. Ausente si todavía no ha empezado. */
+  trial?: { active: boolean; ends_at: string; days_left: number };
+  /** Lo que se paga HOY con IVA: 0 mientras dure la prueba. */
+  due_today?: number;
 }
 
 export interface PluginCustomRequestDTO {

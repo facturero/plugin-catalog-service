@@ -50,8 +50,10 @@ import {
   UpdateDiscountUseCase,
 } from '../../application/use-cases/manage-discounts';
 import { ListMyDiscountRedemptionsUseCase } from '../../application/use-cases/list-my-discount-redemptions';
+import { GetSubscriptionUseCase } from '../../application/use-cases/get-subscription';
 import {
   createDiscountController,
+  getSubscriptionController,
   listDiscountsController,
   listMyDiscountRedemptionsController,
   setDiscountActiveController,
@@ -82,6 +84,7 @@ export interface AppDependencies {
     updateDiscount: UpdateDiscountUseCase;
     setDiscountActive: SetDiscountActiveUseCase;
     listMyDiscountRedemptions: ListMyDiscountRedemptionsUseCase;
+    getSubscription: GetSubscriptionUseCase;
   };
   corsOrigin: string;
 }
@@ -121,6 +124,11 @@ export function organizationRoutes(deps: AppDependencies): Hono<Vars> {
     requirePermission('plugins:manage'),
     validateJson(requestCustomPluginSchema),
     requestCustomPluginController(useCases.requestCustomPlugin));
+
+  // Prueba gratis e IVA de la organización. Lo llama el frontend al cargar; el administrador arranca la prueba.
+  r.get('/organizations/me/subscription',
+    requireOrganization(),
+    getSubscriptionController(useCases.getSubscription));
 
   // Los descuentos que esta organización ya canjeó (qué se le prometió pagar).
   r.get('/organizations/me/discount-redemptions',

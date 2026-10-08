@@ -14,9 +14,11 @@ import {
   DiscountRedemption,
   DiscountRedemptionRepository,
   DiscountRepository,
+  OrganizationTrialRepository,
   Repositories,
 } from '../domain/repositories';
 import { Discount } from '../domain/discount';
+import { OrganizationTrial } from '../domain/trial';
 import { PluginDependencyCycleError } from '../domain/errors';
 import {
   BusinessProfile,
@@ -239,6 +241,18 @@ export function createInMemoryRepositories(): Repositories & { events: DomainEve
     },
   };
 
+  const trialStore = new Map<string, OrganizationTrial>();
+  const trialRepo: OrganizationTrialRepository = {
+    async find(organizationId) {
+      return trialStore.get(organizationId) ?? null;
+    },
+    async insertIfAbsent(trial) {
+      if (trialStore.has(trial.organizationId)) return false;
+      trialStore.set(trial.organizationId, trial);
+      return true;
+    },
+  };
+
   return {
     events,
     __internals: {
@@ -255,6 +269,7 @@ export function createInMemoryRepositories(): Repositories & { events: DomainEve
     organizationBusinessProfiles: orgBusinessProfileRepo,
     discounts: discountRepo,
     discountRedemptions: redemptionRepo,
+    organizationTrials: trialRepo,
   } as Repositories & {
     events: DomainEvent[];
     __internals: {

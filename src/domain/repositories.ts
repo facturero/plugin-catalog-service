@@ -3,6 +3,7 @@ import {
   BusinessProfile, BusinessProfilePlugin, OrganizationBusinessProfile,
 } from './entities';
 import { Discount } from './discount';
+import { OrganizationTrial } from './trial';
 
 export interface DomainEvent {
   type: string;
@@ -96,6 +97,7 @@ export interface Repositories {
   organizationBusinessProfiles: OrganizationBusinessProfileRepository;
   discounts: DiscountRepository;
   discountRedemptions: DiscountRedemptionRepository;
+  organizationTrials: OrganizationTrialRepository;
 }
 
 // ── Descuentos ────────────────────────────────────────────────────────────────
@@ -128,4 +130,12 @@ export interface DiscountRedemptionRepository {
   countByOrganization(discountId: string, organizationId: string): Promise<number>;
   add(redemption: DiscountRedemption): Promise<void>;
   listByOrganization(organizationId: string): Promise<DiscountRedemption[]>;
+}
+
+// ── Prueba gratis ─────────────────────────────────────────────────────────────
+
+export interface OrganizationTrialRepository {
+  find(organizationId: string): Promise<OrganizationTrial | null>;
+  /** Crea la prueba solo si la organización no tenía una. true = la creó ahora. Dos llamadas a la vez crean una sola. */
+  insertIfAbsent(trial: OrganizationTrial): Promise<boolean>;
 }

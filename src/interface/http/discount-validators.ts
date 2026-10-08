@@ -25,6 +25,8 @@ export const createDiscountSchema = z
     code: z.string().trim().min(3, 'El código lleva al menos 3 caracteres.').max(40),
     percent: z.number().min(0.01, 'El porcentaje mínimo es 0,01.').max(100, 'El porcentaje máximo es 100.').optional(),
     amountCents: z.number().int().positive('El monto debe ser mayor que cero.').optional(),
+    /** Solo con `amountCents`: 'plugin' (por defecto) resta ese monto a CADA módulo al mes; 'total' lo resta una sola vez. */
+    fixedAppliesTo: z.enum(['plugin', 'total']).optional(),
     pluginCodes: z.array(z.string().min(1)).max(100).optional(),
     organizationId: z.string().uuid().nullable().optional(),
     durationMonths: z.number().int().positive('La duración debe ser de al menos 1 mes.').nullable().optional(),

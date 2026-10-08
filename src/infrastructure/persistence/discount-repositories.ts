@@ -1,11 +1,13 @@
 import { Transaction } from 'sequelize';
 import { Discount } from '../../domain/discount';
+import { OrganizationTrial } from '../../domain/trial';
 import {
   DiscountRedemption,
   DiscountRedemptionRepository,
   DiscountRepository,
+  OrganizationTrialRepository,
 } from '../../domain/repositories';
-import { DiscountModel, DiscountPluginModel, DiscountRedemptionModel } from './discount-models';
+import { DiscountModel, DiscountPluginModel, DiscountRedemptionModel, OrganizationTrialModel } from './discount-models';
 
 function toDiscount(row: DiscountModel, pluginCodes: string[]): Discount {
   return Discount.fromPersistence({
@@ -14,6 +16,7 @@ function toDiscount(row: DiscountModel, pluginCodes: string[]): Discount {
     name: row.name,
     kind: row.kind,
     value: Number(row.value),
+    fixedAppliesTo: row.fixed_applies_to,
     pluginCodes,
     validFrom: row.valid_from,
     validUntil: row.valid_until,
@@ -80,6 +83,7 @@ export function discountRepository(tx?: Transaction): DiscountRepository {
           name: p.name,
           kind: p.kind,
           value: p.value,
+          fixed_applies_to: p.fixedAppliesTo,
           valid_from: p.validFrom,
           valid_until: p.validUntil,
           max_redemptions: p.maxRedemptions,
@@ -155,6 +159,39 @@ export function discountRedemptionRepository(tx?: Transaction): DiscountRedempti
         transaction: tx,
       });
       return rows.map(toRedemption);
+    },
+  };
+}
+
+export function organizationTrialRepository(tx?: Transaction): OrganizationTrialRepository {
+  const toTrial = (row: OrganizationTrialModel) =>
+    OrganizationTrial.fromPersistence({
+      organizationId: row.organization_id,
+      startedAt: row.started_at,
+      endsAt: row.ends_at,
+      startedByUserId: row.started_by_user_id,
+    });
+
+  return {
+    async find(organizationId) {
+      const row = await OrganizationTrialModel.findByPk(organizationId, { transaction: tx });
+      return row ? toTrial(row) : null;
+    },
+
+    async insertIfAbsent(trial) {
+      // findOrCreate se apoya en la clave primaria: dos ingresos simultáneos del administrador crean UNA sola prueba.
+      const [, created] = await OrganizationTrialModel.findOrCreate({
+        where: { organization_id: trial.organizationId },
+        defaults: {
+          organization_id: trial.organizationId,
+          started_at: trial.startedAt,
+          ends_at: trial.endsAt,
+          started_by_user_id: trial.startedByUserId,
+          created_at: new Date(),
+        },
+        transaction: tx,
+      });
+      return created;
     },
   };
 }
