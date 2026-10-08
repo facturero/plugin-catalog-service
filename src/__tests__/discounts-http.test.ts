@@ -5,6 +5,7 @@ import { GetCatalogUseCase } from '../application/use-cases/get-catalog';
 import { GetOrganizationPluginsUseCase } from '../application/use-cases/get-organization-plugins';
 import { QuoteActivationUseCase } from '../application/use-cases/quote-activation';
 import { ActivatePluginUseCase } from '../application/use-cases/activate-plugin';
+import { ReactivatePluginUseCase } from '../application/use-cases/reactivate-plugin';
 import { CancelPluginDeactivationUseCase } from '../application/use-cases/cancel-plugin-deactivation';
 import { DeactivatePluginUseCase } from '../application/use-cases/deactivate-plugin';
 import { RequestCustomPluginUseCase } from '../application/use-cases/request-custom-plugin';
@@ -40,6 +41,7 @@ function montar() {
       activatePlugin: new ActivatePluginUseCase(uow),
       deactivatePlugin: new DeactivatePluginUseCase(uow),
       cancelPluginDeactivation: new CancelPluginDeactivationUseCase(uow),
+      reactivatePlugin: new ReactivatePluginUseCase(uow),
       requestCustomPlugin: new RequestCustomPluginUseCase(uow),
       listMyCustomRequests: new ListMyCustomRequestsUseCase(r.customRequests),
       fulfillCustomRequest: new FulfillCustomPluginRequestUseCase(uow),

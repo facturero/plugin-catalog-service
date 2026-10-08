@@ -48,6 +48,12 @@ termina el periodo mensual que la organización ya tiene pago, y recién entonce
   `reason: dependents`) en vez de romperle nada.
 - **Arrepentirse:** `POST /organizations/me/plugins/:code/cancel-deactivation` borra la fecha; no se cobra nada nuevo.
 - **Repetir** la petición no mueve la fecha. Un módulo **gratis** (precio 0) no tiene nada pago que esperar y se apaga en el acto.
+- **Reactivar:** mientras lo pagado no haya terminado, volver a activar un módulo desactivado es **gratis y directo**, sin carrito
+  (`POST /organizations/me/plugins/:code/reactivate`): cobrarlo de nuevo sería cobrarle dos veces. Se restaura la misma fila (con su fecha
+  de activación original, de la que cuelga el ciclo de cobro) y lo que se apagó con él. El listado informa `reactivableUntil` (hasta
+  cuándo es gratis; `null` si ya no). Una baja programada que se cumple queda fechada en la fecha programada, así que justo después
+  ya NO es gratis: es una compra nueva y pasa por el carrito (409 `REACTIVATION_NOT_FREE` si se intenta). Las bajas inmediatas
+  anteriores a la baja suave, o hechas en la prueba gratis, se pueden reactivar sin costo hasta el fin de su periodo / prueba.
 - **Eventos:** `plugin.deactivation_scheduled` y `plugin.deactivation_cancelled` (auditoría y refresco de pantalla; no apagan nada).
 
 ## IVA

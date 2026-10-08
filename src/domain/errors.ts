@@ -68,6 +68,15 @@ export class PluginNotAvailableError extends AppError {
   }
 }
 
+/** Reactivar sin costo solo vale mientras lo ya pagado no haya terminado; después es una compra nueva (el carrito). */
+export class ReactivationNotFreeError extends AppError {
+  readonly code = 'REACTIVATION_NOT_FREE';
+  readonly httpStatus = 409;
+  constructor(message = 'Ya terminó el periodo que tenías pago: para volver a usarlo hay que activarlo de nuevo.') {
+    super(message);
+  }
+}
+
 export class PluginAlreadyActiveError extends AppError {
   readonly code = 'PLUGIN_ALREADY_ACTIVE';
   readonly httpStatus = 409;

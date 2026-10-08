@@ -42,6 +42,8 @@ export interface OrganizationPluginDTO {
   deactivatedAt: Date | null;
   /** Desactivación programada: sigue activo hasta esta fecha. */
   deactivateAt?: Date | null;
+  /** Un módulo desactivado cuyo periodo pago no ha terminado: hasta esta fecha reactivarlo no cuesta nada. */
+  reactivableUntil?: Date | null;
   /** Dónde termina el periodo pago actual (a esa fecha se aplicaría una desactivación). Nulo si el módulo es gratis. */
   periodEndsAt?: Date | null;
 }

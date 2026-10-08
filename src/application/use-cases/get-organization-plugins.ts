@@ -5,7 +5,7 @@ import {
   PluginRepository,
   PluginTranslationRepository,
 } from '../../domain/repositories';
-import { currentPeriodEnd } from '../../domain/billing-period';
+import { currentPeriodEnd, paidThroughOfDeactivated } from '../../domain/billing-period';
 import { BASE_LOCALE, localizeText } from '../localization';
 
 export class GetOrganizationPluginsUseCase {
@@ -74,6 +74,15 @@ export class GetOrganizationPluginsUseCase {
         activatedAt: r.activatedAt,
         deactivatedAt: r.deactivatedAt,
         deactivateAt: r.deactivateAt,
+        reactivableUntil:
+          r.status === 'disabled' && r.deactivatedAt && plugin && plugin.priceCents > 0
+            ? paidThroughOfDeactivated({
+                activatedAt: r.activatedAt,
+                deactivatedAt: r.deactivatedAt,
+                trialEndsAt: trial?.endsAt ?? null,
+                now,
+              })
+            : null,
         // La fecha en que terminaría el periodo pago: es cuando se haría efectiva una baja. Un módulo gratis no tiene.
         periodEndsAt:
           r.status === 'active' && plugin && plugin.priceCents > 0

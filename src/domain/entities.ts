@@ -197,9 +197,20 @@ export class OrganizationPlugin {
     return this.props.organizationId === organizationId;
   }
 
-  deactivate(): void {
+  /**
+   * `at`: cuándo dejó de estar activo. Una baja programada que se cumple lo deja en la FECHA programada, no en el momento
+   * (unos minutos después) en que el barrido la aplicó: de ahí se sabe hasta cuándo estaba pagado.
+   */
+  deactivate(at: Date = new Date()): void {
     this.props.status = 'disabled';
-    this.props.deactivatedAt = new Date();
+    this.props.deactivatedAt = at;
+    this.props.deactivateAt = null;
+  }
+
+  /** Vuelve a activo conservando su fecha de activación original (de ella cuelga su ciclo de cobro). */
+  reactivate(): void {
+    this.props.status = 'active';
+    this.props.deactivatedAt = null;
     this.props.deactivateAt = null;
   }
 

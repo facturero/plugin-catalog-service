@@ -4,6 +4,7 @@ import { GetOrganizationPluginsUseCase } from '../../application/use-cases/get-o
 import { QuoteActivationUseCase } from '../../application/use-cases/quote-activation';
 import { ActivatePluginUseCase } from '../../application/use-cases/activate-plugin';
 import { DeactivatePluginUseCase } from '../../application/use-cases/deactivate-plugin';
+import { ReactivatePluginUseCase } from '../../application/use-cases/reactivate-plugin';
 import { CancelPluginDeactivationUseCase } from '../../application/use-cases/cancel-plugin-deactivation';
 import { RequestCustomPluginUseCase } from '../../application/use-cases/request-custom-plugin';
 import { ListMyCustomRequestsUseCase } from '../../application/use-cases/list-my-custom-requests';
@@ -39,6 +40,7 @@ import {
   chooseBusinessProfileController,
   deactivatePluginController,
   cancelPluginDeactivationController,
+  reactivatePluginController,
   fulfillCustomRequestController,
   getBusinessProfileRecommendationsController,
   getCatalogController,
@@ -81,6 +83,7 @@ export interface AppDependencies {
     activatePlugin: ActivatePluginUseCase;
     deactivatePlugin: DeactivatePluginUseCase;
     cancelPluginDeactivation: CancelPluginDeactivationUseCase;
+    reactivatePlugin: ReactivatePluginUseCase;
     requestCustomPlugin: RequestCustomPluginUseCase;
     listMyCustomRequests: ListMyCustomRequestsUseCase;
     fulfillCustomRequest: FulfillCustomPluginRequestUseCase;
@@ -202,6 +205,12 @@ export function organizationRoutes(deps: AppDependencies): Hono<Vars> {
     requirePermission('plugins:manage'),
     validateParams(pluginCodeParamSchema),
     deactivatePluginController(useCases.deactivatePlugin));
+
+  r.post('/organizations/me/plugins/:code/reactivate',
+    requireOrganization(),
+    requirePermission('plugins:manage'),
+    validateParams(pluginCodeParamSchema),
+    reactivatePluginController(useCases.reactivatePlugin));
 
   r.post('/organizations/me/plugins/:code/cancel-deactivation',
     requireOrganization(),

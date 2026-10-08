@@ -4,6 +4,7 @@ import { GetOrganizationPluginsUseCase } from '../../application/use-cases/get-o
 import { QuoteActivationUseCase } from '../../application/use-cases/quote-activation';
 import { ActivatePluginUseCase } from '../../application/use-cases/activate-plugin';
 import { DeactivatePluginUseCase } from '../../application/use-cases/deactivate-plugin';
+import { ReactivatePluginUseCase } from '../../application/use-cases/reactivate-plugin';
 import { CancelPluginDeactivationUseCase } from '../../application/use-cases/cancel-plugin-deactivation';
 import { RequestCustomPluginUseCase } from '../../application/use-cases/request-custom-plugin';
 import { ListMyCustomRequestsUseCase } from '../../application/use-cases/list-my-custom-requests';
@@ -123,6 +124,13 @@ export function deactivatePluginController(useCase: DeactivatePluginUseCase) {
     const { code } = c.req.valid('param' as never) as { code: string };
     const result = await useCase.execute(orgId, code);
     return c.json(result, 200);
+  };
+}
+
+export function reactivatePluginController(useCase: ReactivatePluginUseCase) {
+  return async (c: Ctx) => {
+    const { code } = c.req.valid('param' as never) as { code: string };
+    return c.json(await useCase.execute(c.get('organizationId'), code), 200);
   };
 }
 

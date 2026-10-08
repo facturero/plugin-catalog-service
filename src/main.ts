@@ -18,6 +18,7 @@ import { GetSubscriptionUseCase } from './application/use-cases/get-subscription
 import { PricingPolicy } from './application/pricing-policy';
 import { DeactivatePluginUseCase } from './application/use-cases/deactivate-plugin';
 import { AddToCartUseCase, ClearCartUseCase, GetCartUseCase, RemoveFromCartUseCase } from './application/use-cases/cart';
+import { ReactivatePluginUseCase } from './application/use-cases/reactivate-plugin';
 import { CancelPluginDeactivationUseCase } from './application/use-cases/cancel-plugin-deactivation';
 import { ApplyDueDeactivationsUseCase } from './application/use-cases/apply-due-deactivations';
 import { RequestCustomPluginUseCase } from './application/use-cases/request-custom-plugin';
@@ -71,6 +72,7 @@ async function bootstrap(): Promise<void> {
       activatePlugin: new ActivatePluginUseCase(unitOfWork),
       deactivatePlugin,
       cancelPluginDeactivation: new CancelPluginDeactivationUseCase(unitOfWork),
+      reactivatePlugin: new ReactivatePluginUseCase(unitOfWork),
       requestCustomPlugin: new RequestCustomPluginUseCase(unitOfWork),
       listMyCustomRequests: new ListMyCustomRequestsUseCase(repos.customRequests),
       fulfillCustomRequest: new FulfillCustomPluginRequestUseCase(unitOfWork),

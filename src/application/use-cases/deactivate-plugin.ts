@@ -84,6 +84,10 @@ export class DeactivatePluginUseCase {
       orgRows.filter((r) => r.status === 'active').map((r) => [r.pluginId, r]),
     );
 
+    // Una baja programada que se cumple vale desde su fecha programada (no desde que el barrido la aplicó), también para lo
+    // que se apaga con ella.
+    const effectiveAt = target.deactivateAt ?? new Date();
+
     // Fase 1 — planificar el conjunto a desactivar (fixpoint sobre cadenas A→B→C):
     // un candidato se apaga solo si NINGÚN otro plugin activo (fuera del plan) lo necesita.
     // Se itera hasta estabilizar: apagar C puede liberar a B en una pasada posterior.
@@ -120,7 +124,7 @@ export class DeactivatePluginUseCase {
     for (const pluginId of planned) {
       const row = await repos.organizationPlugins.find(organizationId, pluginId);
       if (!row || row.status !== 'active') continue;
-      row.deactivate();
+      row.deactivate(effectiveAt);
       await repos.organizationPlugins.save(row);
       deactivated.push(row);
       const p = pluginId === plugin.id ? plugin : await repos.plugins.findById(pluginId);
