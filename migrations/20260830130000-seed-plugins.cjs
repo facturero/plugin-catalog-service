@@ -137,7 +137,7 @@ module.exports = {
     for (const m of data.modulos) {
       if (!Array.isArray(m.depends_on)) continue;
       for (const depCode of m.depends_on) {
-        if (!desiredByCode.has(depCode) || coreIds.has(depCode)) continue;
+        if (!desiredByCode.has(depCode) || coreIds.has(depCode) || coreIds.has(m.id)) continue;
         if (depCode === m.id) continue;
         const edgeKey = `${m.id}->${depCode}`;
         if (seenEdges.has(edgeKey)) continue;
