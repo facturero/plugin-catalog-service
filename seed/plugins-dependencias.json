@@ -444,6 +444,7 @@
     },
     {
       "id": "pos.payment_methods",
+      "included": true,
       "name": "Multiples metodos de pago",
       "category": "Punto de Venta",
       "status": "hecho",
@@ -456,6 +457,7 @@
     },
     {
       "id": "pos.offline_sync",
+      "included": true,
       "name": "Sincronizacion offline/online",
       "category": "Punto de Venta",
       "status": "hecho",
@@ -803,6 +805,7 @@
     },
     {
       "id": "comm.shared_documents",
+      "included": true,
       "name": "Documentos compartidos (base)",
       "category": "Comunicacion Interna",
       "status": "hecho",

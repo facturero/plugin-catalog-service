@@ -5,7 +5,7 @@
     "impuestos": "Precios SIN IVA (en Ecuador se suma el IVA vigente al cobrar)",
     "alcance": "Por organización y por módulo, no por usuario: sumar usuarios no encarece el plan. Es la principal diferencia con Zoho y Odoo, que cobran por usuario.",
     "revisado": "2026-10-08",
-    "criterio": "Un módulo base que todos necesitan para trabajar (catálogo, establecimientos, contactos, certificado, ajustes y notificaciones) NO se vende: va incluido en la plataforma (`included` en plugins-dependencias.json, `is_core` en la base), siempre activo y sin poder apagarse. Así tampoco inflan la cotización de lo que de verdad se vende. Los módulos construidos se cobran por debajo de lo que cobra la competencia por lo mismo; los que aún no existen llevan precio objetivo y solo se cobran cuando pasen a «disponible».",
+    "criterio": "Un módulo base que todos necesitan para trabajar (catálogo, establecimientos, contactos, certificado, ajustes y notificaciones) y las capacidades técnicas que nadie elegiría apagar (sincronización del POS, repositorio de documentos, métodos de pago de una venta) NO se venden: va incluido en la plataforma (`included` en plugins-dependencias.json, `is_core` en la base), siempre activo y sin poder apagarse. Así tampoco inflan la cotización de lo que de verdad se vende. Los módulos construidos se cobran por debajo de lo que cobra la competencia por lo mismo; los que aún no existen llevan precio objetivo y solo se cobran cuando pasen a «disponible».",
     "referencias": [
       "Siigo Contífico (Ecuador): facturación electrónica gratis hasta 24 documentos al año; planes Uno 50 / Uno 100 en torno a 5,99 y 10,99 USD al mes + IVA; sistema contable completo desde 55 USD al mes + IVA.",
       "Zoho CRM: 14 a 23 USD por usuario al mes (anual). Zoho Books: 20 a 50 USD al mes. Zoho Inventory: 29 a 39 USD al mes.",
@@ -13,7 +13,7 @@
       "Loyverse: punto de venta gratis; inventario avanzado 25 USD y gestión de empleados 25 USD al mes por tienda.",
       "Alegra México: POS desde 199 MXN al mes y plan Emprendedor 499 MXN (unos 10 y 27 USD)."
     ],
-    "total_modulos": 60
+    "total_modulos": 57
   },
   "precios_cents": {
     "finance.electronic_invoicing": 999,
@@ -28,8 +28,6 @@
 
     "pos.core": 999,
     "pos.cash_sessions": 299,
-    "pos.payment_methods": 199,
-    "pos.offline_sync": 399,
     "pos.discounts_promotions": 299,
 
     "inventory.warehouses": 499,
@@ -81,7 +79,6 @@
 
     "comm.internal_chat": 399,
     "comm.shared_calendar": 299,
-    "comm.shared_documents": 299,
 
     "ecommerce.online_catalog": 999,
     "ecommerce.cart": 999,

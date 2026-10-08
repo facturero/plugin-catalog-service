@@ -10,7 +10,8 @@
   reflejarlo en el JSON. La prueba `pricing.test.ts` obliga a que todo módulo tenga precio y vigila los paquetes típicos
   (por ejemplo, facturar = 9,99 USD; contabilidad completa desde cero = 42,96 USD, por debajo de los 55 USD de Contífico).
 - **Los módulos base van INCLUIDOS, no se venden** (catálogo de productos, establecimientos, contactos, certificado .p12,
-  ajustes de la organización y notificaciones): todos los necesitan para trabajar. Se marcan `"included": true` en
+  ajustes de la organización y notificaciones) y las capacidades técnicas que no son una función que el cliente elija
+  (sincronización online/offline del POS, repositorio de documentos y métodos de pago de una venta): todos los necesitan para trabajar. Se marcan `"included": true` en
   `seed/plugins-dependencias.json` y quedan como `is_core` en la base (migración `20261010120000`). Regla: **lo que no se cobra
   no se puede apagar.** Son núcleo: siempre activos para toda organización, sin fila en `organization_plugins` (el listado
   `GET /organizations/me/plugins` los informa como `activationSource: "included"` para que el gateway deje pasar sus rutas),
