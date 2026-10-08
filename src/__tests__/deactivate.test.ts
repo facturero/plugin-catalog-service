@@ -55,4 +55,17 @@ describe('DeactivatePluginUseCase', () => {
 
     await expect(useCase.execute('org-1', 'mod.a')).rejects.toThrow(PluginNotFoundError);
   });
+
+  it('un módulo desactivado se puede reactivar, con sus dependencias, y vuelve a figurar como activo', async () => {
+    const uow = createInMemoryUow();
+    const { a } = seedExampleWorld(uow.repos);
+    await new ActivatePluginUseCase(uow).execute('org-1', a.code);
+    await new DeactivatePluginUseCase(uow).execute('org-1', a.code);
+
+    await new ActivatePluginUseCase(uow).execute('org-1', a.code);
+
+    const rows = await uow.repos.organizationPlugins.listByOrganization('org-1');
+    expect(rows).toHaveLength(3);
+    expect(rows.every((r) => r.status === 'active' && r.deactivatedAt === null)).toBe(true);
+  });
 });
