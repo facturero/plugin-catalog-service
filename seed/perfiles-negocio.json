@@ -11,10 +11,8 @@
         { "code": "crm.contacts", "recommendation": "essential", "sort_order": 2 },
         { "code": "finance.electronic_invoicing", "recommendation": "essential", "sort_order": 3 },
         { "code": "pos.core", "recommendation": "essential", "sort_order": 4 },
-        { "code": "pos.cash_sessions", "recommendation": "essential", "sort_order": 5 },
         { "code": "pos.payment_methods", "recommendation": "essential", "sort_order": 6 },
         { "code": "inventory.kardex", "recommendation": "suggested", "sort_order": 7 },
-        { "code": "pos.discounts_promotions", "recommendation": "suggested", "sort_order": 8 },
         { "code": "inventory.reorder_alerts", "recommendation": "suggested", "sort_order": 9 },
         { "code": "bi.dashboards", "recommendation": "suggested", "sort_order": 10 }
       ],
@@ -34,7 +32,6 @@
         { "code": "crm.contacts", "recommendation": "essential", "sort_order": 2 },
         { "code": "finance.electronic_invoicing", "recommendation": "essential", "sort_order": 3 },
         { "code": "pos.core", "recommendation": "essential", "sort_order": 4 },
-        { "code": "pos.cash_sessions", "recommendation": "essential", "sort_order": 5 },
         { "code": "pos.payment_methods", "recommendation": "essential", "sort_order": 6 },
         { "code": "inventory.kardex", "recommendation": "essential", "sort_order": 7 },
         { "code": "inventory.lot_tracking", "recommendation": "essential", "sort_order": 8 },
@@ -58,9 +55,7 @@
         { "code": "infra.catalog_products", "recommendation": "essential", "sort_order": 1 },
         { "code": "finance.electronic_invoicing", "recommendation": "essential", "sort_order": 2 },
         { "code": "pos.core", "recommendation": "essential", "sort_order": 3 },
-        { "code": "pos.cash_sessions", "recommendation": "essential", "sort_order": 4 },
         { "code": "pos.payment_methods", "recommendation": "essential", "sort_order": 5 },
-        { "code": "pos.discounts_promotions", "recommendation": "suggested", "sort_order": 6 },
         { "code": "inventory.kardex", "recommendation": "suggested", "sort_order": 7 },
         { "code": "production.bom", "recommendation": "suggested", "sort_order": 8 },
         { "code": "hr.attendance", "recommendation": "suggested", "sort_order": 9 }

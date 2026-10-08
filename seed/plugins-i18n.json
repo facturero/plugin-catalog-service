@@ -102,10 +102,6 @@
     "en": { "name": "Electronic invoicing", "description": "Generates electronic documents valid before the tax authority (in Ecuador, the SRI): it computes taxes, builds the XML, signs it digitally (XAdES-BES) with the company's .p12 certificate and manages the sequence number per emission point." },
     "fr": { "name": "Facturation électronique", "description": "Génère des documents électroniques valides auprès de l'administration fiscale (en Équateur, le SRI) : elle calcule les taxes, construit le XML, le signe numériquement (XAdES-BES) avec le certificat .p12 de l'entreprise et gère le numéro séquentiel par point d'émission." }
   },
-  "finance.multicurrency": {
-    "en": { "name": "Multi-currency", "description": "Lets you handle prices and transactions in different currencies, always storing the monetary value as an integer in the currency's smallest unit (cents) to avoid rounding errors in financial arithmetic." },
-    "fr": { "name": "Multidevise", "description": "Permet de gérer les prix et les transactions dans différentes devises, en stockant toujours la valeur monétaire sous forme d'entier dans la plus petite unité de la devise (centimes) afin d'éviter les erreurs d'arrondi dans les calculs financiers." }
-  },
   "finance.accounts_receivable_payable": {
     "en": { "name": "Accounts receivable / accounts payable", "description": "Tracks how much each customer owes the company (receivables) and how much the company owes its suppliers (payables), with due dates, partial payments and outstanding balance." },
     "fr": { "name": "Comptes clients / comptes fournisseurs", "description": "Suit ce que chaque client doit à l'entreprise (créances) et ce que l'entreprise doit à ses fournisseurs (dettes), avec les échéances, les paiements partiels et le solde restant dû." }
@@ -147,10 +143,6 @@
     "en": { "name": "Stock control / Kardex (FIFO, LIFO, WAC)", "description": "Keeps a detailed record of every product's inflows and outflows and computes inventory cost using a chosen method (FIFO: first in, first out; LIFO: last in, first out; or WAC: weighted average cost), giving the exact cost of goods sold and the value of remaining inventory." },
     "fr": { "name": "Contrôle des stocks / Kardex (FIFO, LIFO, CMP)", "description": "Tient le registre détaillé des entrées et sorties de chaque produit et calcule le coût du stock selon une méthode définie (FIFO : premier entré, premier sorti ; LIFO : dernier entré, premier sorti ; ou CMP : coût moyen pondéré), donnant le coût exact des marchandises vendues et la valeur du stock restant." }
   },
-  "inventory.purchase_orders": {
-    "en": { "name": "Purchase orders (inventory view)", "description": "An inventory-side view of purchase orders: what goods are expected, which warehouse they will arrive at and when, so space and cash flow can be planned." },
-    "fr": { "name": "Bons de commande (vue inventaire)", "description": "Vue côté inventaire des bons de commande : quelles marchandises sont attendues, dans quel entrepôt elles arriveront et quand, afin de planifier l'espace et la trésorerie." }
-  },
   "inventory.warehouse_transfers": {
     "en": { "name": "Transfers between warehouses", "description": "Records stock movement from one warehouse to another, deducting from the source and adding to the destination, keeping traceability of where each unit is." },
     "fr": { "name": "Transferts entre entrepôts", "description": "Enregistre le mouvement de stock d'un entrepôt à un autre, en déduisant de l'entrepôt d'origine et en ajoutant à celui de destination, tout en conservant la traçabilité de chaque unité." }
@@ -165,12 +157,8 @@
   },
 
   "pos.core": {
-    "en": { "name": "Point of Sale (POS)", "description": "A point-of-sale application for fast counter sales: find a product (by name, SKU or barcode), compute the total with taxes and discounts, and close the sale — working even without an internet connection thanks to a local database (MySQL via Prisma) that later syncs with the central system." },
-    "fr": { "name": "Point de vente (PDV)", "description": "Application de point de vente permettant d'enregistrer rapidement les ventes au comptoir : rechercher un produit (par nom, SKU ou code-barres), calculer le total avec taxes et remises, puis clôturer la vente — même sans connexion Internet, grâce à une base de données locale (MySQL via Prisma) synchronisée ensuite avec le système central." }
-  },
-  "pos.cash_sessions": {
-    "en": { "name": "Cash register and shift management", "description": "Controls opening and closing the register per shift: the cashier records the starting cash amount, the system computes the expected amount from the shift's sales, and on closing it is compared against the real counted amount, leaving evidence of any difference (over or short)." },
-    "fr": { "name": "Gestion des caisses et des services", "description": "Contrôle l'ouverture et la clôture de caisse par service : le caissier saisit le fonds de caisse initial, le système calcule le montant attendu d'après les ventes du service, et à la clôture il est comparé au montant réellement compté, en conservant la trace de tout écart (excédent ou manquant)." }
+    "en": { "name": "Point of Sale (POS)", "description": "A point-of-sale application for fast counter sales: find a product (by name, SKU or barcode), compute the total with taxes and discounts, and close the sale — working even without an internet connection thanks to a local database (MySQL via Prisma) that later syncs with the central system. It includes opening and closing the register per shift (starting cash, expected versus counted amount, over or short) and discounts per sale or per product at checkout." },
+    "fr": { "name": "Point de vente (PDV)", "description": "Application de point de vente permettant d'enregistrer rapidement les ventes au comptoir : rechercher un produit (par nom, SKU ou code-barres), calculer le total avec taxes et remises, puis clôturer la vente — même sans connexion Internet, grâce à une base de données locale (MySQL via Prisma) synchronisée ensuite avec le système central. Elle inclut l'ouverture et la clôture de caisse par service (fonds initial, montant attendu face au montant compté, excédent ou manquant) et les remises par vente ou par produit à l'encaissement." }
   },
   "pos.payment_methods": {
     "en": { "name": "Multiple payment methods", "description": "Lets each sale be recorded with a specific payment method (cash, card, transfer or other), even splitting a single sale across several methods when the customer pays with a combination." },
@@ -179,10 +167,6 @@
   "pos.offline_sync": {
     "en": { "name": "Offline/online synchronization", "description": "The sync engine that lets the POS work without internet: sales are stored locally and flagged as unsynced until there is a connection, at which point they are uploaded to the central system; products and prices are pulled from the admin down to the POS." },
     "fr": { "name": "Synchronisation hors ligne/en ligne", "description": "Moteur de synchronisation qui permet au PDV de fonctionner sans Internet : les ventes sont enregistrées localement et marquées comme non synchronisées jusqu'au retour de la connexion, moment où elles sont envoyées au système central ; les produits et les prix sont récupérés depuis l'administration vers le PDV." }
-  },
-  "pos.discounts_promotions": {
-    "en": { "name": "Discounts and promotions", "description": "Lets you apply a discount to a whole sale or to an individual product at checkout, computed before the final total." },
-    "fr": { "name": "Remises et promotions", "description": "Permet d'appliquer une remise sur l'ensemble de la vente ou sur un produit précis au moment de l'encaissement, calculée avant le total final." }
   },
 
   "hr.employees": {

@@ -2,10 +2,10 @@
   "meta": {
     "proyecto": "external (CRM + Facturacion Electronica)",
     "descripcion": "Catalogo de plugins/modulos VENDIBLES (activables/desactivables por plan de organizacion), con su estado, servicio real que lo implementa (cuando existe) y dependencias entre si. 'infra_existente' son piezas base del sistema que toda organizacion tiene siempre activas: no se venden ni se activan/desactivan por plan y se siembran en la tabla plugins con is_core = true, y algunas viven fisicamente dentro de otro servicio (ver campo 'note' en cada una). 'phase' es el orden sugerido de construccion (0 = ya existe/base, mayor numero = depende de mas cosas). 'status' de modulos: hecho, parcial, falta. 'service': carpeta real dentro de external/ que lo implementa, o null si no existe codigo.",
-    "total_modulos": 65,
-    "hechos": 11,
-    "parciales": 5,
-    "faltan": 49
+    "total_modulos": 62,
+    "hechos": 12,
+    "parciales": 4,
+    "faltan": 46
   },
   "infra_existente": [
     {
@@ -238,18 +238,6 @@
       "description": "Genera comprobantes electronicos validos ante la autoridad fiscal (en Ecuador, el SRI): calcula impuestos, arma el XML, lo firma digitalmente (XAdES-BES) con el certificado .p12 de la empresa y gestiona el secuencial por punto de emision."
     },
     {
-      "id": "finance.multicurrency",
-      "name": "Multi-moneda",
-      "category": "Facturacion y Finanzas",
-      "status": "hecho",
-      "phase": 1,
-      "service": "product-service",
-      "depends_on": [
-        "infra.catalog_products"
-      ],
-      "description": "Permite manejar precios y transacciones en distintas monedas, guardando siempre el valor monetario como entero en la unidad minima de la moneda (centavos) para evitar errores de redondeo en la aritmetica financiera."
-    },
-    {
       "id": "finance.accounts_receivable_payable",
       "name": "Cuentas por cobrar / cuentas por pagar",
       "category": "Facturacion y Finanzas",
@@ -370,18 +358,6 @@
       "description": "Lleva el registro detallado de entradas y salidas de cada producto y calcula el costo de inventario usando un metodo definido (PEPS: primero en entrar primero en salir; UEPS: ultimo en entrar primero en salir; o CPP: costo promedio ponderado), dando el costo exacto de lo vendido y el valor del inventario restante."
     },
     {
-      "id": "inventory.purchase_orders",
-      "name": "Ordenes de compra (vista de inventario)",
-      "category": "Inventario y Cadena de Suministro",
-      "status": "falta",
-      "phase": 2,
-      "service": null,
-      "depends_on": [
-        "inventory.warehouses"
-      ],
-      "description": "Vista de inventario sobre las ordenes de compra: que mercancia se espera recibir, en que bodega entrara y cuando, para poder planear espacio y flujo de caja."
-    },
-    {
       "id": "inventory.warehouse_transfers",
       "name": "Transferencias entre bodegas",
       "category": "Inventario y Cadena de Suministro",
@@ -428,19 +404,7 @@
         "infra.catalog_products",
         "admin.users_roles"
       ],
-      "description": "Aplicacion de punto de venta que permite registrar ventas rapidas en mostrador: buscar producto (por nombre, SKU o codigo de barras), calcular el total con impuestos y descuentos, y cerrar la venta, funcionando incluso sin conexion a internet gracias a una base de datos local (MySQL via Prisma) que luego sincroniza con el sistema central."
-    },
-    {
-      "id": "pos.cash_sessions",
-      "name": "Gestion de cajas y turnos",
-      "category": "Punto de Venta",
-      "status": "hecho",
-      "phase": 2,
-      "service": "pos",
-      "depends_on": [
-        "pos.core"
-      ],
-      "description": "Controla la apertura y cierre de caja por turno: el cajero registra el monto inicial en efectivo, el sistema calcula el monto esperado segun las ventas del turno, y al cerrar se compara contra el monto real contado, dejando evidencia de cualquier diferencia (sobrante o faltante)."
+      "description": "Aplicacion de punto de venta que permite registrar ventas rapidas en mostrador: buscar producto (por nombre, SKU o codigo de barras), calcular el total con impuestos y descuentos, y cerrar la venta, funcionando incluso sin conexion a internet gracias a una base de datos local (MySQL via Prisma) que luego sincroniza con el sistema central. Incluye la apertura y cierre de caja por turno (monto inicial, monto esperado contra el contado, sobrante o faltante) y los descuentos por venta o por producto al cobrar."
     },
     {
       "id": "pos.payment_methods",
@@ -467,18 +431,6 @@
         "pos.core"
       ],
       "description": "Motor de sincronizacion que permite que el POS funcione sin internet: las ventas se guardan localmente y quedan marcadas como no sincronizadas hasta que hay conexion, momento en el que se suben al sistema central; los productos y precios se bajan (pull) desde el admin hacia el POS."
-    },
-    {
-      "id": "pos.discounts_promotions",
-      "name": "Descuentos y promociones",
-      "category": "Punto de Venta",
-      "status": "hecho",
-      "phase": 2,
-      "service": "pos",
-      "depends_on": [
-        "pos.core"
-      ],
-      "description": "Permite aplicar un descuento a nivel de venta completa o por producto individual al momento de cobrar, calculado antes del total final."
     },
     {
       "id": "hr.employees",

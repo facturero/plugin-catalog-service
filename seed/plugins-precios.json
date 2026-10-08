@@ -17,7 +17,6 @@
   },
   "precios_cents": {
     "finance.electronic_invoicing": 999,
-    "finance.multicurrency": 499,
     "finance.financial_reports": 999,
     "finance.accounts_receivable_payable": 799,
     "finance.general_ledger": 1499,
@@ -27,13 +26,10 @@
     "finance.fixed_assets": 699,
 
     "pos.core": 999,
-    "pos.cash_sessions": 299,
-    "pos.discounts_promotions": 299,
 
     "inventory.warehouses": 499,
     "inventory.kardex": 999,
     "inventory.suppliers": 399,
-    "inventory.purchase_orders": 499,
     "inventory.warehouse_transfers": 399,
     "inventory.lot_tracking": 799,
     "inventory.reorder_alerts": 399,

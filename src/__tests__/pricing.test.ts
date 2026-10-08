@@ -63,17 +63,14 @@ describe('precios de los módulos (seed/plugins-precios.json)', () => {
       expect(total).toBeLessThan(2500);
     });
 
-    it('caja completa (POS con cierres, medios de pago, modo sin conexión y promociones) + facturar: menos de 40 USD', () => {
+    it('caja completa (POS con cierres de turno, medios de pago, modo sin conexión y descuentos, todo dentro de pos.core) + facturar: 19,98 USD', () => {
       const vistos = new Set<string>();
-      const total = [
-        'finance.electronic_invoicing',
-        'pos.core',
-        'pos.cash_sessions',
-        'pos.payment_methods',
-        'pos.offline_sync',
-        'pos.discounts_promotions',
-      ].reduce((suma, id) => suma + totalDesdeCero(id, vistos), 0);
-      expect(total).toBeLessThan(4000);
+      const total = ['finance.electronic_invoicing', 'pos.core'].reduce((suma, id) => suma + totalDesdeCero(id, vistos), 0);
+      expect(total).toBe(999 + 999);
+    });
+
+    it('lo que es una función del POS (turnos, descuentos, medios de pago, sincronización) no se vende aparte', () => {
+      for (const id of ['pos.cash_sessions', 'pos.discounts_promotions']) expect(porId.has(id), id).toBe(false);
     });
 
     it('contabilidad completa desde cero (facturar + por cobrar/pagar + libro mayor + reportes): 42,96 USD, por debajo de los 55 USD de Contífico', () => {
