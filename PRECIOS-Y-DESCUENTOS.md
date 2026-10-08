@@ -77,6 +77,25 @@ que dos canjes a la vez no pasen el tope). Cada canje guarda el precio de lista,
 futuro debe usar eso y no el precio que tenga el módulo ese día. Hoy el sistema **no cobra** módulos; los descuentos quedan
 registrados y listos para cuando haya facturación de suscripciones.
 
+### El carrito (activar varios módulos a la vez)
+
+```
+POST /organizations/me/plugins/cart/quote      { "codes": ["pos.core", "inventory.kardex"], "discountCode": "VEINTE" }
+POST /organizations/me/plugins/cart/activate   mismo cuerpo (permiso plugins:manage)
+```
+
+- **Cotizar:** devuelve `items` (cada uno `selected` = lo elegido, `required` = lo que arrastra y se activará también,
+  `already_active` = ya lo tiene), `invalid` (códigos que no existen, son del núcleo o aún no están disponibles: salen aparte y no
+  cuentan en el total), `missing` (dependencias que no se activan solas) y los mismos totales de siempre: descuento, IVA y
+  prueba gratis. **Lo que dos módulos comparten se cuenta una sola vez**; un código de descuento aplica a todo el carrito.
+- **Activar:** todo o nada, en una transacción. Si algo no se puede activar (no existe, es del núcleo, no está disponible, falta
+  una dependencia, el código de descuento no vale) no se activa NADA y no se canjea nada. Lo ya activo se omite; si todo lo pedido
+  ya estaba activo, responde 409. El descuento se canjea UNA vez para todo el carrito (`discount_redemptions.plugin_code` guarda los
+  códigos elegidos separados por coma). Activar un solo módulo es el carrito de un artículo (`ActivatePluginUseCase.execute`).
+- **Un módulo pedido que otro del carrito necesita** se activa una vez, como contratación directa.
+- Las rutas `cart/*` van registradas ANTES de las de `:code`, que de otro modo las tomarían por un módulo llamado «cart».
+- El frontend guarda el carrito en `sessionStorage` y lo vuelve a cotizar en cada cambio (`stores/pluginCart.ts`).
+
 ### Endpoints (organización)
 
 ```

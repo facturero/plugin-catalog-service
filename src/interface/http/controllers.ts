@@ -43,6 +43,27 @@ export function getOrganizationPluginsController(useCase: GetOrganizationPlugins
   };
 }
 
+export function cartQuoteController(useCase: QuoteActivationUseCase) {
+  return async (c: Ctx) => {
+    const orgId = c.get('organizationId');
+    const body = c.req.valid('json' as never) as { codes: string[]; discountCode?: string };
+    const result = await useCase.executeCart(orgId, body.codes, c.get('locale'), body.discountCode?.trim() || undefined);
+    return c.json(result, 200);
+  };
+}
+
+export function cartActivateController(useCase: ActivatePluginUseCase) {
+  return async (c: Ctx) => {
+    const orgId = c.get('organizationId');
+    const body = c.req.valid('json' as never) as { codes: string[]; discountCode?: string };
+    const result = await useCase.executeMany(orgId, body.codes, {
+      discountCode: body.discountCode?.trim() || undefined,
+      userId: c.get('userId') ?? null,
+    });
+    return c.json(result, 200);
+  };
+}
+
 export function quoteController(useCase: QuoteActivationUseCase) {
   return async (c: Ctx) => {
     const orgId = c.get('organizationId');

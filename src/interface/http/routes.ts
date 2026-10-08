@@ -16,6 +16,7 @@ import { GetBusinessProfileRecommendationsUseCase } from '../../application/use-
 import { ActivatePluginsBatchUseCase } from '../../application/use-cases/activate-plugins-batch';
 import {
   activatePluginsBatchSchema,
+  cartSchema,
   businessProfileCodeParamSchema,
   chooseBusinessProfileSchema,
   fulfillCustomRequestSchema,
@@ -29,6 +30,8 @@ import {
 import {
   activatePluginController,
   activatePluginsBatchController,
+  cartQuoteController,
+  cartActivateController,
   chooseBusinessProfileController,
   deactivatePluginController,
   cancelPluginDeactivationController,
@@ -137,6 +140,19 @@ export function organizationRoutes(deps: AppDependencies): Hono<Vars> {
   r.get('/organizations/me/discount-redemptions',
     requireOrganization(),
     listMyDiscountRedemptionsController(useCases.listMyDiscountRedemptions));
+
+  // El carrito: cotizar y activar varios módulos juntos. Van ANTES de las rutas con `:code`, que de otro modo las tomarían
+  // por un módulo llamado «cart».
+  r.post('/organizations/me/plugins/cart/quote',
+    requireOrganization(),
+    validateJson(cartSchema),
+    cartQuoteController(useCases.quoteActivation));
+
+  r.post('/organizations/me/plugins/cart/activate',
+    requireOrganization(),
+    requirePermission('plugins:manage'),
+    validateJson(cartSchema),
+    cartActivateController(useCases.activatePlugin));
 
   // :code dinámico va al final para no chocar con las rutas estáticas de arriba.
   r.get('/organizations/me/plugins/:code/quote',

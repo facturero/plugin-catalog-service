@@ -1,4 +1,5 @@
-import { PluginDTO, QuoteDTO, QuoteRequirementDTO } from '../dtos';
+import { CartQuoteDTO, CartQuoteItemDTO, PluginDTO, QuoteDTO, QuoteRequirementDTO, QuoteTotals } from '../dtos';
+import { planActivation } from '../activation-plan';
 import { PluginNotFoundError, PluginNotVisibleToOrganizationError } from '../../domain/errors';
 import {
   OrganizationPluginRepository,
@@ -67,14 +68,70 @@ export class QuoteActivationUseCase {
       total_monthly: total,
     };
 
-    if (discountCode?.trim() && this.discounts && this.redemptions) {
-      // Se descuenta lo que se va a pagar: el módulo y las dependencias que aún no están activas.
-      const lines = [
-        { pluginCode: plugin.code, priceCents: plugin.priceCents },
-        ...requires
-          .filter((r) => !r.already_active)
-          .map((r) => ({ pluginCode: r.plugin.code, priceCents: r.price })),
-      ];
+    // Se descuenta lo que se va a pagar: el módulo y las dependencias que aún no están activas.
+    const lines = [
+      { pluginCode: plugin.code, priceCents: plugin.priceCents },
+      ...requires
+        .filter((r) => !r.already_active)
+        .map((r) => ({ pluginCode: r.plugin.code, priceCents: r.price })),
+    ];
+    await this.applyTotals(quote, organizationId, lines, discountCode);
+    return quote;
+  }
+
+  /**
+   * Cotiza VARIOS módulos a la vez (el carrito): lo que comparten se cuenta una sola vez, un código de descuento aplica a
+   * todo el carrito y los pedidos que no se pueden activar salen aparte, sin tumbar el resto.
+   */
+  async executeCart(
+    organizationId: string,
+    pluginCodes: string[],
+    locale: string = BASE_LOCALE,
+    discountCode?: string,
+  ): Promise<CartQuoteDTO> {
+    const plan = await planActivation(
+      { plugins: this.plugins, dependencies: this.dependencies, organizationPlugins: this.organizationPlugins },
+      organizationId,
+      pluginCodes,
+    );
+    const texts =
+      locale === BASE_LOCALE
+        ? new Map<string, PluginTranslation>()
+        : await this.translations.mapByLocale(locale);
+
+    const items: CartQuoteItemDTO[] = [
+      ...plan.selected.map((p): CartQuoteItemDTO => ({ plugin: toDto(p, texts.get(p.id)), price: p.priceCents, kind: 'selected' })),
+      ...plan.dependencies.map((d): CartQuoteItemDTO => ({
+        plugin: toDto(d.plugin, texts.get(d.plugin.id)),
+        price: d.plugin.priceCents,
+        kind: d.alreadyActive ? 'already_active' : 'required',
+        required_by: d.requiredBy.code,
+      })),
+      ...plan.alreadyActive.map((p): CartQuoteItemDTO => ({ plugin: toDto(p, texts.get(p.id)), price: p.priceCents, kind: 'already_active' })),
+    ];
+    const lines = items
+      .filter((i) => i.kind !== 'already_active')
+      .map((i) => ({ pluginCode: i.plugin.code, priceCents: i.price }));
+
+    const quote: CartQuoteDTO = {
+      items,
+      // Lo que es privado de otra organización se informa igual que lo que no existe: no se revela que existe.
+      invalid: plan.invalid.map(({ code, reason }) => ({ code, reason: reason === 'not_visible' ? 'not_found' : reason })),
+      missing: plan.missing,
+      total_monthly: lines.reduce((sum, l) => sum + l.priceCents, 0),
+    };
+    await this.applyTotals(quote, organizationId, lines, discountCode);
+    return quote;
+  }
+
+  /** Descuento, IVA y prueba gratis sobre un total: igual para un módulo suelto que para el carrito. */
+  private async applyTotals(
+    quote: QuoteTotals,
+    organizationId: string,
+    lines: { pluginCode: string; priceCents: number }[],
+    discountCode?: string,
+  ): Promise<void> {
+    if (discountCode?.trim() && this.discounts && this.redemptions && lines.length > 0) {
       try {
         const { discount, result } = await resolveDiscount({
           discounts: this.discounts,
@@ -120,8 +177,6 @@ export class QuoteActivationUseCase {
       // Durante la prueba no se paga nada; el precio de arriba es lo que pagará cuando termine.
       quote.due_today = trial?.isActiveAt(now) ? 0 : quote.total_with_vat;
     }
-
-    return quote;
   }
 }
 

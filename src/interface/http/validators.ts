@@ -36,6 +36,12 @@ export const chooseBusinessProfileSchema = z.object({
   source: z.enum(['onboarding', 'settings']).default('onboarding'),
 });
 
+/** El carrito: los módulos a cotizar o activar juntos, y un código de descuento opcional para todo el carrito. */
+export const cartSchema = z.object({
+  codes: z.array(z.string().min(1)).min(1, 'Elige al menos un módulo.').max(50),
+  discountCode: z.string().max(100).optional(),
+});
+
 export const activatePluginsBatchSchema = z.object({
   codes: z.array(z.string().min(1)).max(50),
 });

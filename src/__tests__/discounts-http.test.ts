@@ -212,3 +212,29 @@ describe('HTTP · prueba gratis e IVA', () => {
     expect(await total.json()).toMatchObject({ kind: 'fixed', fixedAppliesTo: 'total' });
   });
 });
+
+describe('HTTP · carrito de módulos', () => {
+  it('cotizar y activar el carrito no se confunden con las rutas de un módulo llamado «cart»', async () => {
+    const { llamar, a } = montar();
+
+    const cot = await llamar('POST', '/organizations/me/plugins/cart/quote', { body: { codes: [a.code] } });
+    expect(cot.status).toBe(200);
+    expect(await cot.json()).toMatchObject({ total_monthly: 3500, missing: [], invalid: [] });
+
+    const act = await llamar('POST', '/organizations/me/plugins/cart/activate', { body: { codes: [a.code] } });
+    expect(act.status).toBe(200);
+    expect(((await act.json()) as unknown[]).length).toBe(3);
+  });
+
+  it('activar sin plugins:manage responde 403; cotizar sí se puede', async () => {
+    const { llamar, a } = montar();
+    expect((await llamar('POST', '/organizations/me/plugins/cart/activate', { permisos: 'x:y', body: { codes: [a.code] } })).status).toBe(403);
+    expect((await llamar('POST', '/organizations/me/plugins/cart/quote', { permisos: 'x:y', body: { codes: [a.code] } })).status).toBe(200);
+  });
+
+  it('un carrito vacío responde 422', async () => {
+    const { llamar } = montar();
+    expect((await llamar('POST', '/organizations/me/plugins/cart/quote', { body: { codes: [] } })).status).toBe(422);
+    expect((await llamar('POST', '/organizations/me/plugins/cart/activate', { body: { codes: [] } })).status).toBe(422);
+  });
+});

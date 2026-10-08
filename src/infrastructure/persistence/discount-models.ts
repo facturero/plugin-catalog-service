@@ -81,7 +81,7 @@ DiscountRedemptionModel.init(
     id: { type: DataTypes.CHAR(36), primaryKey: true },
     discount_id: { type: DataTypes.CHAR(36), allowNull: false },
     organization_id: { type: DataTypes.CHAR(36), allowNull: false },
-    plugin_code: { type: DataTypes.STRING(100), allowNull: false },
+    plugin_code: { type: DataTypes.TEXT, allowNull: false },
     redeemed_by_user_id: { type: DataTypes.CHAR(36), allowNull: true },
     list_cents: { type: DataTypes.BIGINT, allowNull: false },
     discount_cents: { type: DataTypes.BIGINT, allowNull: false },

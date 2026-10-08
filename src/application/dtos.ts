@@ -65,10 +65,8 @@ export interface QuoteDiscountDTO {
   lines: Array<{ plugin_code: string; price: number; discount: number; final: number }>;
 }
 
-export interface QuoteDTO {
-  plugin: PluginDTO;
-  price: number;
-  requires: QuoteRequirementDTO[];
+/** Lo que tienen en común la cotización de un módulo y la del carrito: total, descuento, IVA y prueba gratis. */
+export interface QuoteTotals {
   total_monthly: number;
   /** Solo si se pidió con un código y el código vale. */
   discount?: QuoteDiscountDTO;
@@ -86,6 +84,29 @@ export interface QuoteDTO {
   trial?: { active: boolean; ends_at: string; days_left: number };
   /** Lo que se paga HOY con IVA: 0 mientras dure la prueba. */
   due_today?: number;
+}
+
+export interface QuoteDTO extends QuoteTotals {
+  plugin: PluginDTO;
+  price: number;
+  requires: QuoteRequirementDTO[];
+}
+
+export interface CartQuoteItemDTO {
+  plugin: PluginDTO;
+  price: number;
+  /** `selected`: lo que se eligió; `required`: lo que arrastra y se activará también; `already_active`: ya lo tiene. */
+  kind: 'selected' | 'required' | 'already_active';
+  /** Para `required`: el módulo elegido que lo necesita. */
+  required_by?: string;
+}
+
+export interface CartQuoteDTO extends QuoteTotals {
+  items: CartQuoteItemDTO[];
+  /** Códigos que no se pueden activar (no existen, son del núcleo o aún no están disponibles): no cuentan en el total. */
+  invalid: { code: string; reason: 'not_found' | 'core' | 'not_available' }[];
+  /** Dependencias que no se activan solas: hay que resolverlas antes de poder activar. */
+  missing: string[];
 }
 
 export interface PluginCustomRequestDTO {
