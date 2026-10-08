@@ -47,11 +47,30 @@ export interface QuoteRequirementDTO {
   already_active: boolean;
 }
 
+export interface QuoteDiscountDTO {
+  code: string;
+  name: string;
+  kind: 'percent' | 'fixed';
+  /** percent: puntos básicos (1500 = 15 %). fixed: centavos. */
+  value: number;
+  /** Total descontado al mes, en centavos. */
+  discount_cents: number;
+  /** Meses que dura una vez canjeado; null = mientras el módulo siga activo. */
+  duration_months: number | null;
+  lines: Array<{ plugin_code: string; price: number; discount: number; final: number }>;
+}
+
 export interface QuoteDTO {
   plugin: PluginDTO;
   price: number;
   requires: QuoteRequirementDTO[];
   total_monthly: number;
+  /** Solo si se pidió con un código y el código vale. */
+  discount?: QuoteDiscountDTO;
+  /** Solo si se pidió con un código y NO vale (vencido, agotado, no aplica...). La cotización normal viene igual. */
+  discount_error?: { code: string; message: string };
+  /** Solo con descuento: lo que se pagaría al mes. */
+  total_after_discount?: number;
 }
 
 export interface PluginCustomRequestDTO {

@@ -2,6 +2,7 @@ import {
   Plugin, PluginDependency, OrganizationPlugin, PluginCustomRequest,
   BusinessProfile, BusinessProfilePlugin, OrganizationBusinessProfile,
 } from './entities';
+import { Discount } from './discount';
 
 export interface DomainEvent {
   type: string;
@@ -93,4 +94,38 @@ export interface Repositories {
   outbox: OutboxRepository;
   businessProfiles: BusinessProfileRepository;
   organizationBusinessProfiles: OrganizationBusinessProfileRepository;
+  discounts: DiscountRepository;
+  discountRedemptions: DiscountRedemptionRepository;
+}
+
+// ── Descuentos ────────────────────────────────────────────────────────────────
+
+export interface DiscountRedemption {
+  id: string;
+  discountId: string;
+  organizationId: string;
+  /** El módulo que la persona eligió activar al canjear. */
+  pluginCode: string;
+  redeemedByUserId: string | null;
+  listCents: number;
+  discountCents: number;
+  finalCents: number;
+  redeemedAt: Date;
+  /** null = dura mientras el módulo siga activo. */
+  expiresAt: Date | null;
+}
+
+export interface DiscountRepository {
+  findByCode(code: string): Promise<Discount | null>;
+  /** Igual que `findByCode` pero bloquea la fila hasta el final de la transacción: dos canjes a la vez no pasan el tope. */
+  findByCodeForUpdate(code: string): Promise<Discount | null>;
+  findById(id: string): Promise<Discount | null>;
+  list(): Promise<Discount[]>;
+  save(discount: Discount): Promise<void>;
+}
+
+export interface DiscountRedemptionRepository {
+  countByOrganization(discountId: string, organizationId: string): Promise<number>;
+  add(redemption: DiscountRedemption): Promise<void>;
+  listByOrganization(organizationId: string): Promise<DiscountRedemption[]>;
 }

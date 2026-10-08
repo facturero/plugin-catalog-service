@@ -1,5 +1,7 @@
+import { randomUUID } from 'node:crypto';
 import { UnitOfWork } from '../ports';
 import { OrganizationPluginDTO } from '../dtos';
+import { AppliedDiscount, redemptionExpiry, resolveDiscount } from '../discount-pricing';
 import { OrganizationPlugin } from '../../domain/entities';
 import {
   CorePluginNotConfigurableError,
@@ -13,7 +15,16 @@ import {
 export class ActivatePluginUseCase {
   constructor(private readonly uow: UnitOfWork) {}
 
-  async execute(organizationId: string, pluginCode: string): Promise<OrganizationPluginDTO[]> {
+  /**
+   * `options.discountCode`: un código de descuento para lo que se activa ahora (el módulo y las dependencias que aún no
+   * estaban). Se valida ANTES de activar nada y se canjea en la misma transacción: si el código no vale, no se activa
+   * ni se cobra nada a medias. `options.userId` queda en el canje para saber quién lo usó.
+   */
+  async execute(
+    organizationId: string,
+    pluginCode: string,
+    options: { discountCode?: string; userId?: string | null } = {},
+  ): Promise<OrganizationPluginDTO[]> {
     return this.uow.execute(async (repos) => {
       const plugin = await repos.plugins.findByCode(pluginCode);
       if (!plugin) throw new PluginNotFoundError();
@@ -46,6 +57,25 @@ export class ActivatePluginUseCase {
       }
       if (missing.length > 0) throw new MissingDependenciesError([...new Set(missing)]);
 
+      const payLines = [
+        { pluginCode: plugin.code, priceCents: plugin.priceCents },
+        ...toActivate.map((t) => {
+          const dep = byId.get(t.pluginId)!;
+          return { pluginCode: dep.code, priceCents: dep.priceCents };
+        }),
+      ];
+      let applied: AppliedDiscount | null = null;
+      if (options.discountCode?.trim()) {
+        applied = await resolveDiscount({
+          discounts: repos.discounts,
+          redemptions: repos.discountRedemptions,
+          organizationId,
+          code: options.discountCode,
+          lines: payLines,
+          lock: true,
+        });
+      }
+
       const activated: OrganizationPlugin[] = [];
       for (const t of toActivate) {
         const op = OrganizationPlugin.activateAsDependency(organizationId, t.pluginId, plugin.id);
@@ -71,6 +101,42 @@ export class ActivatePluginUseCase {
             requiredByPluginId: op.requiredByPluginId,
           },
           occurredAt: new Date(),
+        });
+      }
+
+      if (applied) {
+        const now = new Date();
+        const { discount, result } = applied;
+        await repos.discountRedemptions.add({
+          id: randomUUID(),
+          discountId: discount.id,
+          organizationId,
+          pluginCode: plugin.code,
+          redeemedByUserId: options.userId ?? null,
+          listCents: payLines.reduce((sum, l) => sum + l.priceCents, 0),
+          discountCents: result.discountCents,
+          finalCents: result.totalCents,
+          redeemedAt: now,
+          expiresAt: redemptionExpiry(discount, now),
+        });
+        discount.registerRedemption();
+        await repos.discounts.save(discount);
+        // `pricing.` y no `plugin.`: el gateway recarga los módulos de la organización con cada `plugin.*`.
+        await repos.outbox.add({
+          type: 'pricing.discount.redeemed',
+          aggregateType: 'discount',
+          aggregateId: discount.id,
+          payload: {
+            targetId: discount.id,
+            organizationId,
+            discountCode: discount.code,
+            pluginCode: plugin.code,
+            listCents: payLines.reduce((sum, l) => sum + l.priceCents, 0),
+            discountCents: result.discountCents,
+            finalCents: result.totalCents,
+            durationMonths: discount.durationMonths,
+          },
+          occurredAt: now,
         });
       }
 

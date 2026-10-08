@@ -8,6 +8,9 @@ import {
   PluginTranslationRepository,
 } from '../../domain/repositories';
 import { BASE_LOCALE, localizeText } from '../localization';
+import { DiscountRedemptionRepository, DiscountRepository } from '../../domain/repositories';
+import { AppError } from '../../domain/errors';
+import { resolveDiscount } from '../discount-pricing';
 
 export class QuoteActivationUseCase {
   constructor(
@@ -15,9 +18,16 @@ export class QuoteActivationUseCase {
     private readonly dependencies: PluginDependencyRepository,
     private readonly organizationPlugins: OrganizationPluginRepository,
     private readonly translations: PluginTranslationRepository,
+    private readonly discounts?: DiscountRepository,
+    private readonly redemptions?: DiscountRedemptionRepository,
   ) {}
 
-  async execute(organizationId: string, pluginCode: string, locale: string = BASE_LOCALE): Promise<QuoteDTO> {
+  async execute(
+    organizationId: string,
+    pluginCode: string,
+    locale: string = BASE_LOCALE,
+    discountCode?: string,
+  ): Promise<QuoteDTO> {
     const plugin = await this.plugins.findByCode(pluginCode);
     if (!plugin) throw new PluginNotFoundError();
     if (!plugin.isVisibleTo(organizationId)) throw new PluginNotVisibleToOrganizationError();
@@ -47,12 +57,52 @@ export class QuoteActivationUseCase {
       if (!already_active) total += depPlugin.priceCents;
     }
 
-    return {
+    const quote: QuoteDTO = {
       plugin: toDto(plugin, texts.get(plugin.id)),
       price: plugin.priceCents,
       requires,
       total_monthly: total,
     };
+
+    if (discountCode?.trim() && this.discounts && this.redemptions) {
+      // Se descuenta lo que se va a pagar: el módulo y las dependencias que aún no están activas.
+      const lines = [
+        { pluginCode: plugin.code, priceCents: plugin.priceCents },
+        ...requires
+          .filter((r) => !r.already_active)
+          .map((r) => ({ pluginCode: r.plugin.code, priceCents: r.price })),
+      ];
+      try {
+        const { discount, result } = await resolveDiscount({
+          discounts: this.discounts,
+          redemptions: this.redemptions,
+          organizationId,
+          code: discountCode,
+          lines,
+        });
+        quote.discount = {
+          code: discount.code,
+          name: discount.name,
+          kind: discount.kind,
+          value: discount.value,
+          discount_cents: result.discountCents,
+          duration_months: discount.durationMonths,
+          lines: result.lines.map((l) => ({
+            plugin_code: l.pluginCode,
+            price: l.priceCents,
+            discount: l.discountCents,
+            final: l.finalCents,
+          })),
+        };
+        quote.total_after_discount = result.totalCents;
+      } catch (err) {
+        // Un código malo no tumba la cotización: se explica y se sigue mostrando el precio de lista.
+        if (!(err instanceof AppError)) throw err;
+        quote.discount_error = { code: err.code, message: err.message };
+      }
+    }
+
+    return quote;
   }
 }
 

@@ -37,6 +37,7 @@ import {
 import { UnitOfWork } from '../../application/ports';
 import { withActor } from '@facturero/outbox-relay';
 import { PluginDependencyCycleError } from '../../domain/errors';
+import { discountRedemptionRepository, discountRepository } from './discount-repositories';
 
 function toPlugin(m: PluginModel): Plugin {
   return Plugin.fromPersistence({
@@ -418,6 +419,8 @@ export function buildRepositories(tx?: Transaction): Repositories {
     outbox: outboxRepository(tx),
     businessProfiles: businessProfileRepository(tx),
     organizationBusinessProfiles: organizationBusinessProfileRepository(tx),
+    discounts: discountRepository(tx),
+    discountRedemptions: discountRedemptionRepository(tx),
   };
 }
 

@@ -7,6 +7,13 @@ import { GetCatalogUseCase } from './application/use-cases/get-catalog';
 import { GetOrganizationPluginsUseCase } from './application/use-cases/get-organization-plugins';
 import { QuoteActivationUseCase } from './application/use-cases/quote-activation';
 import { ActivatePluginUseCase } from './application/use-cases/activate-plugin';
+import {
+  CreateDiscountUseCase,
+  ListDiscountsUseCase,
+  SetDiscountActiveUseCase,
+  UpdateDiscountUseCase,
+} from './application/use-cases/manage-discounts';
+import { ListMyDiscountRedemptionsUseCase } from './application/use-cases/list-my-discount-redemptions';
 import { DeactivatePluginUseCase } from './application/use-cases/deactivate-plugin';
 import { RequestCustomPluginUseCase } from './application/use-cases/request-custom-plugin';
 import { ListMyCustomRequestsUseCase } from './application/use-cases/list-my-custom-requests';
@@ -46,6 +53,8 @@ async function bootstrap(): Promise<void> {
         repos.dependencies,
         repos.organizationPlugins,
         repos.translations,
+        repos.discounts,
+        repos.discountRedemptions,
       ),
       activatePlugin: new ActivatePluginUseCase(unitOfWork),
       deactivatePlugin: new DeactivatePluginUseCase(unitOfWork),
@@ -69,6 +78,11 @@ async function bootstrap(): Promise<void> {
       activatePluginsBatch: new ActivatePluginsBatchUseCase(
         new ActivatePluginUseCase(unitOfWork),
       ),
+      listDiscounts: new ListDiscountsUseCase(unitOfWork),
+      createDiscount: new CreateDiscountUseCase(unitOfWork),
+      updateDiscount: new UpdateDiscountUseCase(unitOfWork),
+      setDiscountActive: new SetDiscountActiveUseCase(unitOfWork),
+      listMyDiscountRedemptions: new ListMyDiscountRedemptionsUseCase(repos.discounts, repos.discountRedemptions),
     },
     corsOrigin: config.CORS_ORIGIN,
   });

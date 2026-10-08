@@ -14,6 +14,8 @@ import { ChooseBusinessProfileUseCase } from '../../application/use-cases/choose
 import { GetBusinessProfileRecommendationsUseCase } from '../../application/use-cases/get-business-profile-recommendations';
 import { ActivatePluginsBatchUseCase } from '../../application/use-cases/activate-plugins-batch';
 import { ContextVariables } from './middlewares';
+import { ValidationError } from '../../domain/errors';
+import { activateWithDiscountSchema } from './discount-validators';
 
 type Ctx = Context<{ Variables: ContextVariables }>;
 
@@ -44,7 +46,8 @@ export function quoteController(useCase: QuoteActivationUseCase) {
   return async (c: Ctx) => {
     const orgId = c.get('organizationId');
     const { code } = c.req.valid('param' as never) as { code: string };
-    const result = await useCase.execute(orgId, code, c.get('locale'));
+    const discountCode = c.req.query('discountCode')?.trim() || undefined;
+    const result = await useCase.execute(orgId, code, c.get('locale'), discountCode);
     return c.json(result, 200);
   };
 }
@@ -53,7 +56,15 @@ export function activatePluginController(useCase: ActivatePluginUseCase) {
   return async (c: Ctx) => {
     const orgId = c.get('organizationId');
     const { code } = c.req.valid('param' as never) as { code: string };
-    const result = await useCase.execute(orgId, code);
+    // El cuerpo es opcional: activar sin código sigue siendo un POST vacío.
+    const body = activateWithDiscountSchema.safeParse(await c.req.json().catch(() => ({})));
+    if (!body.success) {
+      throw new ValidationError(body.error.issues.map((i) => ({ field: i.path.join('.') || '(root)', message: i.message })));
+    }
+    const result = await useCase.execute(orgId, code, {
+      discountCode: body.data.discountCode,
+      userId: c.get('userId') ?? null,
+    });
     return c.json(result, 200);
   };
 }

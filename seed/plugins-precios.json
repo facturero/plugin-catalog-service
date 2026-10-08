@@ -1,0 +1,98 @@
+{
+  "meta": {
+    "moneda": "USD",
+    "periodo": "mensual",
+    "impuestos": "Precios SIN IVA (en Ecuador se suma el IVA vigente al cobrar)",
+    "alcance": "Por organización y por módulo, no por usuario: sumar usuarios no encarece el plan. Es la principal diferencia con Zoho y Odoo, que cobran por usuario.",
+    "revisado": "2026-10-08",
+    "criterio": "Un módulo base que todos necesitan para trabajar (catálogo, establecimientos, contactos, certificado) vale 0 para que las dependencias no inflen la cotización de lo que de verdad se vende. Los módulos construidos se cobran por debajo de lo que cobra la competencia por lo mismo; los que aún no existen llevan precio objetivo y solo se cobran cuando pasen a «disponible».",
+    "referencias": [
+      "Siigo Contífico (Ecuador): facturación electrónica gratis hasta 24 documentos al año; planes Uno 50 / Uno 100 en torno a 5,99 y 10,99 USD al mes + IVA; sistema contable completo desde 55 USD al mes + IVA.",
+      "Zoho CRM: 14 a 23 USD por usuario al mes (anual). Zoho Books: 20 a 50 USD al mes. Zoho Inventory: 29 a 39 USD al mes.",
+      "Odoo Standard: 31,10 USD por usuario al mes (9,10 en la zona de menor precio).",
+      "Loyverse: punto de venta gratis; inventario avanzado 25 USD y gestión de empleados 25 USD al mes por tienda.",
+      "Alegra México: POS desde 199 MXN al mes y plan Emprendedor 499 MXN (unos 10 y 27 USD)."
+    ],
+    "total_modulos": 66
+  },
+  "precios_cents": {
+    "infra.catalog_products": 0,
+    "org.establishments": 0,
+    "crm.contacts": 0,
+    "finance.electronic_certificate": 0,
+    "admin.org_settings": 0,
+    "comm.notifications": 0,
+
+    "finance.electronic_invoicing": 999,
+    "finance.multicurrency": 499,
+    "finance.financial_reports": 999,
+    "finance.accounts_receivable_payable": 799,
+    "finance.general_ledger": 1499,
+    "finance.bank_reconciliation": 699,
+    "finance.budgets": 599,
+    "finance.cash_flow": 499,
+    "finance.fixed_assets": 699,
+
+    "pos.core": 999,
+    "pos.cash_sessions": 299,
+    "pos.payment_methods": 199,
+    "pos.offline_sync": 399,
+    "pos.discounts_promotions": 299,
+
+    "inventory.warehouses": 499,
+    "inventory.kardex": 999,
+    "inventory.suppliers": 399,
+    "inventory.purchase_orders": 499,
+    "inventory.warehouse_transfers": 399,
+    "inventory.lot_tracking": 799,
+    "inventory.reorder_alerts": 399,
+
+    "admin.audit_log": 399,
+    "admin.api_webhooks": 999,
+
+    "crm.leads_pipeline": 999,
+    "crm.interaction_history": 399,
+    "crm.support_tickets": 799,
+    "crm.marketing_automation": 1299,
+    "crm.quotes": 599,
+    "crm.surveys": 399,
+    "crm.customer_portal": 999,
+
+    "hr.employees": 599,
+    "hr.attendance": 599,
+    "hr.leave_management": 399,
+    "hr.performance_review": 599,
+    "hr.recruitment": 699,
+    "hr.payroll": 1499,
+
+    "production.bom": 799,
+    "production.orders": 999,
+    "production.quality_control": 599,
+    "production.maintenance": 599,
+    "production.mrp": 1499,
+
+    "projects.tasks_kanban": 499,
+    "projects.time_tracking": 399,
+    "projects.resource_allocation": 599,
+    "projects.project_billing": 699,
+
+    "purchasing.requests": 399,
+    "purchasing.supplier_evaluation": 399,
+    "purchasing.quote_comparison": 499,
+    "purchasing.purchase_orders": 499,
+
+    "bi.dashboards": 999,
+    "bi.kpis": 499,
+    "bi.exports": 299,
+    "bi.predictive_analytics": 1499,
+
+    "comm.internal_chat": 399,
+    "comm.shared_calendar": 299,
+    "comm.shared_documents": 299,
+
+    "ecommerce.online_catalog": 999,
+    "ecommerce.cart": 999,
+    "ecommerce.payment_gateways": 799,
+    "ecommerce.shipping": 599
+  }
+}

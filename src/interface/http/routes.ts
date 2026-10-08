@@ -43,6 +43,21 @@ import {
   requestCustomPluginController,
 } from './controllers';
 import { ContextVariables, requireOrganization, requirePermission } from './middlewares';
+import {
+  CreateDiscountUseCase,
+  ListDiscountsUseCase,
+  SetDiscountActiveUseCase,
+  UpdateDiscountUseCase,
+} from '../../application/use-cases/manage-discounts';
+import { ListMyDiscountRedemptionsUseCase } from '../../application/use-cases/list-my-discount-redemptions';
+import {
+  createDiscountController,
+  listDiscountsController,
+  listMyDiscountRedemptionsController,
+  setDiscountActiveController,
+  updateDiscountController,
+} from './discount-controllers';
+import { createDiscountSchema, discountIdParamSchema, updateDiscountSchema } from './discount-validators';
 
 type Vars = { Variables: ContextVariables };
 
@@ -62,6 +77,11 @@ export interface AppDependencies {
     chooseBusinessProfile: ChooseBusinessProfileUseCase;
     getBusinessProfileRecommendations: GetBusinessProfileRecommendationsUseCase;
     activatePluginsBatch: ActivatePluginsBatchUseCase;
+    listDiscounts: ListDiscountsUseCase;
+    createDiscount: CreateDiscountUseCase;
+    updateDiscount: UpdateDiscountUseCase;
+    setDiscountActive: SetDiscountActiveUseCase;
+    listMyDiscountRedemptions: ListMyDiscountRedemptionsUseCase;
   };
   corsOrigin: string;
 }
@@ -101,6 +121,11 @@ export function organizationRoutes(deps: AppDependencies): Hono<Vars> {
     requirePermission('plugins:manage'),
     validateJson(requestCustomPluginSchema),
     requestCustomPluginController(useCases.requestCustomPlugin));
+
+  // Los descuentos que esta organización ya canjeó (qué se le prometió pagar).
+  r.get('/organizations/me/discount-redemptions',
+    requireOrganization(),
+    listMyDiscountRedemptionsController(useCases.listMyDiscountRedemptions));
 
   // :code dinámico va al final para no chocar con las rutas estáticas de arriba.
   r.get('/organizations/me/plugins/:code/quote',
@@ -160,6 +185,37 @@ export function adminRoutes(deps: AppDependencies): Hono<Vars> {
     validateParams(requestIdParamSchema),
     validateJson(fulfillCustomRequestSchema),
     fulfillCustomRequestController(useCases.fulfillCustomRequest));
+
+  // Descuentos: se administran con el permiso plugins:admin, igual que las solicitudes de módulos a medida.
+  r.get('/admin/discounts',
+    requireOrganization(),
+    requirePermission('plugins:admin'),
+    listDiscountsController(useCases.listDiscounts));
+
+  r.post('/admin/discounts',
+    requireOrganization(),
+    requirePermission('plugins:admin'),
+    validateJson(createDiscountSchema),
+    createDiscountController(useCases.createDiscount));
+
+  r.patch('/admin/discounts/:id',
+    requireOrganization(),
+    requirePermission('plugins:admin'),
+    validateParams(discountIdParamSchema),
+    validateJson(updateDiscountSchema),
+    updateDiscountController(useCases.updateDiscount));
+
+  r.post('/admin/discounts/:id/deactivate',
+    requireOrganization(),
+    requirePermission('plugins:admin'),
+    validateParams(discountIdParamSchema),
+    setDiscountActiveController(useCases.setDiscountActive, false));
+
+  r.post('/admin/discounts/:id/reactivate',
+    requireOrganization(),
+    requirePermission('plugins:admin'),
+    validateParams(discountIdParamSchema),
+    setDiscountActiveController(useCases.setDiscountActive, true));
 
   r.post('/admin/plugin-requests/:id/reject',
     requireOrganization(),

@@ -114,3 +114,39 @@ export class PluginDependencyCycleError extends AppError {
   readonly httpStatus = 500;
   constructor(message = 'Se detectó un ciclo en el grafo de dependencias de plugins.') { super(message); }
 }
+
+export class DiscountNotFoundError extends AppError {
+  readonly code = 'DISCOUNT_NOT_FOUND';
+  readonly httpStatus = 404;
+  constructor(message = 'El descuento no existe.') { super(message); }
+}
+
+export class DiscountCodeAlreadyExistsError extends AppError {
+  readonly code = 'DISCOUNT_CODE_EXISTS';
+  readonly httpStatus = 409;
+  constructor(code: string) { super(`Ya existe un descuento con el código ${code}.`); }
+}
+
+const DISCOUNT_REJECTION_MESSAGES = {
+  inactive: 'Este código ya no está disponible.',
+  not_started: 'Este código todavía no está vigente.',
+  expired: 'Este código venció.',
+  exhausted: 'Este código ya alcanzó su límite de usos.',
+  already_redeemed: 'Tu organización ya usó este código.',
+  other_organization: 'Este código no es válido para tu organización.',
+  not_applicable: 'Este código no aplica a los módulos que vas a activar.',
+} as const;
+
+/**
+ * Un código que no se puede usar. Para quien no tiene el código, «no existe» y «es de otra organización» responden lo
+ * mismo (404): no se regala qué códigos existen. El resto de motivos (vencido, agotado, ya usado) sí se explican.
+ */
+export class DiscountRejectedError extends AppError {
+  readonly code: string;
+  readonly httpStatus: number;
+  constructor(readonly reason: keyof typeof DISCOUNT_REJECTION_MESSAGES) {
+    super(DISCOUNT_REJECTION_MESSAGES[reason]);
+    this.code = reason === 'other_organization' ? 'DISCOUNT_NOT_FOUND' : `DISCOUNT_${reason.toUpperCase()}`;
+    this.httpStatus = reason === 'other_organization' ? 404 : 422;
+  }
+}

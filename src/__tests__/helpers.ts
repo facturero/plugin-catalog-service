@@ -11,8 +11,12 @@ import {
   PluginRepository,
   PluginTranslation,
   PluginTranslationRepository,
+  DiscountRedemption,
+  DiscountRedemptionRepository,
+  DiscountRepository,
   Repositories,
 } from '../domain/repositories';
+import { Discount } from '../domain/discount';
 import { PluginDependencyCycleError } from '../domain/errors';
 import {
   BusinessProfile,
@@ -203,6 +207,38 @@ export function createInMemoryRepositories(): Repositories & { events: DomainEve
     },
   };
 
+  const discountStore = new Map<string, Discount>();
+  const redemptionStore: DiscountRedemption[] = [];
+  const discountRepo: DiscountRepository = {
+    async findByCode(code) {
+      const wanted = Discount.normalizeCode(code);
+      return [...discountStore.values()].find((d) => d.code === wanted) ?? null;
+    },
+    async findByCodeForUpdate(code) {
+      return discountRepo.findByCode(code);
+    },
+    async findById(id) {
+      return discountStore.get(id) ?? null;
+    },
+    async list() {
+      return [...discountStore.values()];
+    },
+    async save(discount) {
+      discountStore.set(discount.id, discount);
+    },
+  };
+  const redemptionRepo: DiscountRedemptionRepository = {
+    async countByOrganization(discountId, organizationId) {
+      return redemptionStore.filter((r) => r.discountId === discountId && r.organizationId === organizationId).length;
+    },
+    async add(r) {
+      redemptionStore.push(r);
+    },
+    async listByOrganization(organizationId) {
+      return redemptionStore.filter((r) => r.organizationId === organizationId);
+    },
+  };
+
   return {
     events,
     __internals: {
@@ -217,6 +253,8 @@ export function createInMemoryRepositories(): Repositories & { events: DomainEve
     outbox,
     businessProfiles: businessProfileRepo,
     organizationBusinessProfiles: orgBusinessProfileRepo,
+    discounts: discountRepo,
+    discountRedemptions: redemptionRepo,
   } as Repositories & {
     events: DomainEvent[];
     __internals: {
