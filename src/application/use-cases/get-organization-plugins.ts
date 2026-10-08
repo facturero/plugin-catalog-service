@@ -1,9 +1,11 @@
 import { OrganizationPluginDTO } from '../dtos';
 import {
   OrganizationPluginRepository,
+  OrganizationTrialRepository,
   PluginRepository,
   PluginTranslationRepository,
 } from '../../domain/repositories';
+import { currentPeriodEnd } from '../../domain/billing-period';
 import { BASE_LOCALE, localizeText } from '../localization';
 
 export class GetOrganizationPluginsUseCase {
@@ -11,10 +13,16 @@ export class GetOrganizationPluginsUseCase {
     private readonly organizationPlugins: OrganizationPluginRepository,
     private readonly plugins: PluginRepository,
     private readonly translations: PluginTranslationRepository,
+    private readonly trials: OrganizationTrialRepository,
   ) {}
 
-  async execute(organizationId: string, locale: string = BASE_LOCALE): Promise<OrganizationPluginDTO[]> {
+  async execute(
+    organizationId: string,
+    locale: string = BASE_LOCALE,
+    now: Date = new Date(),
+  ): Promise<OrganizationPluginDTO[]> {
     const rows = await this.organizationPlugins.listByOrganization(organizationId);
+    const trial = await this.trials.find(organizationId);
     const uniqueIds = [...new Set(rows.map((r) => r.pluginId))];
     const found = await Promise.all(uniqueIds.map((id) => this.plugins.findById(id)));
     const byId = new Map(found.filter((p) => p !== null).map((p) => [p.id, p]));
@@ -41,6 +49,12 @@ export class GetOrganizationPluginsUseCase {
         status: r.status,
         activatedAt: r.activatedAt,
         deactivatedAt: r.deactivatedAt,
+        deactivateAt: r.deactivateAt,
+        // La fecha en que terminaría el periodo pago: es cuando se haría efectiva una baja. Un módulo gratis no tiene.
+        periodEndsAt:
+          r.status === 'active' && plugin && plugin.priceCents > 0
+            ? currentPeriodEnd({ activatedAt: r.activatedAt, trialEndsAt: trial?.endsAt ?? null, now })
+            : null,
       };
     });
   }

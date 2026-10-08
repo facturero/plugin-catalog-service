@@ -76,6 +76,7 @@ function toOrganizationPlugin(m: OrganizationPluginModel): OrganizationPlugin {
     status: m.status,
     activatedAt: m.activated_at,
     deactivatedAt: m.deactivated_at,
+    deactivateAt: m.deactivate_at,
   });
 }
 
@@ -260,9 +261,17 @@ function organizationPluginRepository(tx?: Transaction): OrganizationPluginRepos
           status: p.status,
           activated_at: p.activatedAt,
           deactivated_at: p.deactivatedAt,
+          deactivate_at: p.deactivateAt,
         },
         { transaction: tx },
       );
+    },
+    async listDueForDeactivation(now) {
+      const ms = await OrganizationPluginModel.findAll({
+        where: { status: 'active', deactivate_at: { [Op.lte]: now } },
+        transaction: tx,
+      });
+      return ms.map(toOrganizationPlugin);
     },
     async delete(organizationId, pluginId) {
       await OrganizationPluginModel.destroy({

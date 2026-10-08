@@ -39,6 +39,10 @@ export interface OrganizationPluginDTO {
   status: 'active' | 'disabled';
   activatedAt: Date;
   deactivatedAt: Date | null;
+  /** Desactivación programada: sigue activo hasta esta fecha. */
+  deactivateAt?: Date | null;
+  /** Dónde termina el periodo pago actual (a esa fecha se aplicaría una desactivación). Nulo si el módulo es gratis. */
+  periodEndsAt?: Date | null;
 }
 
 export interface QuoteRequirementDTO {

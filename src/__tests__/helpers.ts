@@ -146,6 +146,9 @@ export function createInMemoryRepositories(): Repositories & { events: DomainEve
     async save(op) {
       orgPlugins.set(`${op.organizationId}:${op.pluginId}`, OrganizationPlugin.fromPersistence({ ...op.toPersistence() }));
     },
+    async listDueForDeactivation(now) {
+      return Array.from(orgPlugins.values()).filter((r) => r.isActive && r.deactivateAt !== null && r.deactivateAt <= now);
+    },
     async delete(organizationId, pluginId) {
       orgPlugins.delete(`${organizationId}:${pluginId}`);
     },

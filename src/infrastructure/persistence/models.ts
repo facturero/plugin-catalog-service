@@ -98,6 +98,7 @@ export class OrganizationPluginModel extends Model<
   declare status: 'active' | 'disabled';
   declare activated_at: Date;
   declare deactivated_at: Date | null;
+  declare deactivate_at: Date | null;
 }
 
 OrganizationPluginModel.init(
@@ -109,6 +110,7 @@ OrganizationPluginModel.init(
     status: { type: DataTypes.ENUM('active', 'disabled'), allowNull: false, defaultValue: 'active' },
     activated_at: { type: DataTypes.DATE, allowNull: false },
     deactivated_at: { type: DataTypes.DATE, allowNull: true },
+    deactivate_at: { type: DataTypes.DATE, allowNull: true },
   },
   { sequelize, tableName: 'organization_plugins', timestamps: false },
 );

@@ -13,6 +13,8 @@ const schema = z.object({
   RABBITMQ_URL: z.string().optional(),
   /** Meses de prueba gratis de TODA la organización (no por módulo), desde el primer ingreso de su administrador. */
   TRIAL_MONTHS: z.coerce.number().int().min(0).max(24).default(3),
+  /** Cada cuántos segundos se revisa si ya llegó la fecha de alguna baja programada de módulos. */
+  DEACTIVATION_SWEEP_SECONDS: z.coerce.number().int().min(10).default(300),
   /** IVA que se suma a los precios de los módulos, en puntos básicos (1500 = 15 %). */
   VAT_BPS: z.coerce.number().int().min(0).max(10000).default(1500),
 });
@@ -40,6 +42,7 @@ export interface AppConfig {
   CORS_ORIGIN: string;
   RABBITMQ_URL?: string;
   TRIAL_MONTHS: number;
+  DEACTIVATION_SWEEP_SECONDS: number;
   VAT_BPS: number;
 }
 
@@ -54,5 +57,6 @@ export const config: AppConfig = {
   CORS_ORIGIN: env.CORS_ORIGIN,
   RABBITMQ_URL: env.RABBITMQ_URL,
   TRIAL_MONTHS: env.TRIAL_MONTHS,
+  DEACTIVATION_SWEEP_SECONDS: env.DEACTIVATION_SWEEP_SECONDS,
   VAT_BPS: env.VAT_BPS,
 };

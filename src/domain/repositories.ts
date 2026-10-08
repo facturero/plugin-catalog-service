@@ -54,6 +54,8 @@ export interface OrganizationPluginRepository {
   listByOrganization(organizationId: string): Promise<OrganizationPlugin[]>;
   find(organizationId: string, pluginId: string): Promise<OrganizationPlugin | null>;
   save(op: OrganizationPlugin): Promise<void>;
+  /** Activos (de cualquier organización) cuya desactivación programada ya llegó. */
+  listDueForDeactivation(now: Date): Promise<OrganizationPlugin[]>;
   delete(organizationId: string, pluginId: string): Promise<void>;
 }
 

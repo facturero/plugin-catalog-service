@@ -17,6 +17,8 @@ import { ListMyDiscountRedemptionsUseCase } from './application/use-cases/list-m
 import { GetSubscriptionUseCase } from './application/use-cases/get-subscription';
 import { PricingPolicy } from './application/pricing-policy';
 import { DeactivatePluginUseCase } from './application/use-cases/deactivate-plugin';
+import { CancelPluginDeactivationUseCase } from './application/use-cases/cancel-plugin-deactivation';
+import { ApplyDueDeactivationsUseCase } from './application/use-cases/apply-due-deactivations';
 import { RequestCustomPluginUseCase } from './application/use-cases/request-custom-plugin';
 import { ListMyCustomRequestsUseCase } from './application/use-cases/list-my-custom-requests';
 import { FulfillCustomPluginRequestUseCase } from './application/use-cases/fulfill-custom-plugin-request';
@@ -27,7 +29,7 @@ import { ChooseBusinessProfileUseCase } from './application/use-cases/choose-bus
 import { GetBusinessProfileRecommendationsUseCase } from './application/use-cases/get-business-profile-recommendations';
 import { ActivatePluginsBatchUseCase } from './application/use-cases/activate-plugins-batch';
 import { createApp } from './interface/http/app';
-import { OutboxRelay } from '@facturero/outbox-relay';
+import { OutboxRelay, runWithActor } from '@facturero/outbox-relay';
 
 async function bootstrap(): Promise<void> {
   await sequelize.authenticate();
@@ -38,6 +40,8 @@ async function bootstrap(): Promise<void> {
   const repos = buildRepositories();
   // Prueba gratis de la organización e IVA: vienen del entorno (TRIAL_MONTHS, VAT_BPS).
   const pricingPolicy: PricingPolicy = { trialMonths: config.TRIAL_MONTHS, vatBps: config.VAT_BPS };
+
+  const deactivatePlugin = new DeactivatePluginUseCase(unitOfWork);
 
   const app = createApp({
     useCases: {
@@ -51,6 +55,7 @@ async function bootstrap(): Promise<void> {
         repos.organizationPlugins,
         repos.plugins,
         repos.translations,
+        repos.organizationTrials,
       ),
       quoteActivation: new QuoteActivationUseCase(
         repos.plugins,
@@ -63,7 +68,8 @@ async function bootstrap(): Promise<void> {
         pricingPolicy,
       ),
       activatePlugin: new ActivatePluginUseCase(unitOfWork),
-      deactivatePlugin: new DeactivatePluginUseCase(unitOfWork),
+      deactivatePlugin,
+      cancelPluginDeactivation: new CancelPluginDeactivationUseCase(unitOfWork),
       requestCustomPlugin: new RequestCustomPluginUseCase(unitOfWork),
       listMyCustomRequests: new ListMyCustomRequestsUseCase(repos.customRequests),
       fulfillCustomRequest: new FulfillCustomPluginRequestUseCase(unitOfWork),
@@ -97,6 +103,15 @@ async function bootstrap(): Promise<void> {
   serve({ fetch: app.fetch, port: config.PORT }, () => {
     console.log(`[plugin-catalog-service] Escuchando en el puerto ${config.PORT}.`);
   });
+
+  // Las bajas programadas se cumplen aquí: al arrancar y cada cierto tiempo se apaga lo que ya cumplió su periodo pago.
+  const applyDue = new ApplyDueDeactivationsUseCase(unitOfWork, repos.organizationPlugins, repos.plugins, deactivatePlugin);
+  const sweep = () =>
+    runWithActor({ actorId: null, actorEmail: 'sistema', actorIp: null, requestId: null }, () => applyDue.execute())
+      .then((n) => n > 0 && console.log(`[plugin-catalog-service] ${n} módulo(s) apagado(s) por fin de periodo.`))
+      .catch((err) => console.error('[plugin-catalog-service] Falló el barrido de bajas programadas:', err));
+  setInterval(sweep, config.DEACTIVATION_SWEEP_SECONDS * 1000).unref();
+  void sweep();
 
   if (config.RABBITMQ_URL) {
     relay = new OutboxRelay({

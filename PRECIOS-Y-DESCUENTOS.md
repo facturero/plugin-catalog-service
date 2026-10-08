@@ -26,6 +26,25 @@
 - **Un descuento no se gasta durante la prueba:** su duración (`durationMonths`) cuenta desde que termina la prueba.
 - La cotización informa `trial` y `due_today` (0 mientras dure la prueba) además del total que se pagará después.
 
+## Desactivar un módulo (baja «suave»)
+
+Lo ya pagado se respeta: pedir la baja de un módulo de pago **no lo apaga en el acto**. Queda activo y funcionando hasta que
+termina el periodo mensual que la organización ya tiene pago, y recién entonces desaparece de «Mis módulos».
+
+- **Periodo:** se cuenta desde que el módulo empieza a cobrarse (su activación o, si la prueba gratis termina después, el fin de
+  la prueba) y se repite cada mes desde esa misma fecha (31 de enero → 28 de febrero → 31 de marzo). Durante la prueba, el
+  periodo vigente es la propia prueba. Está en `src/domain/billing-period.ts`.
+- **Fecha:** se guarda en `organization_plugins.deactivate_at` (el estado sigue `active`). `GET /organizations/me/plugins`
+  devuelve `deactivateAt` (la baja programada) y `periodEndsAt` (dónde terminaría el periodo ahora, para avisarlo antes de pedirla;
+  `null` si el módulo es gratis).
+- **Cumplirla:** un barrido (`ApplyDueDeactivationsUseCase`, cada `DEACTIVATION_SWEEP_SECONDS`, 300 por defecto, y al arrancar)
+  apaga los módulos cuya fecha llegó, con su cascada, y publica `plugin.deactivated` (es el que escuchan inventario y el gateway).
+  Si desde que se programó la organización activó algo que lo necesita, la baja se cancela sola (`plugin.deactivation_cancelled`,
+  `reason: dependents`) en vez de romperle nada.
+- **Arrepentirse:** `POST /organizations/me/plugins/:code/cancel-deactivation` borra la fecha; no se cobra nada nuevo.
+- **Repetir** la petición no mueve la fecha. Un módulo **gratis** (precio 0) no tiene nada pago que esperar y se apaga en el acto.
+- **Eventos:** `plugin.deactivation_scheduled` y `plugin.deactivation_cancelled` (auditoría y refresco de pantalla; no apagan nada).
+
 ## IVA
 
 Los precios del JSON son **sin IVA**. El servicio suma `VAT_BPS` (1500 = 15 %, Ecuador) y lo informa en la cotización:

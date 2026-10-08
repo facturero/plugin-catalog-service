@@ -4,6 +4,7 @@ import { GetOrganizationPluginsUseCase } from '../../application/use-cases/get-o
 import { QuoteActivationUseCase } from '../../application/use-cases/quote-activation';
 import { ActivatePluginUseCase } from '../../application/use-cases/activate-plugin';
 import { DeactivatePluginUseCase } from '../../application/use-cases/deactivate-plugin';
+import { CancelPluginDeactivationUseCase } from '../../application/use-cases/cancel-plugin-deactivation';
 import { RequestCustomPluginUseCase } from '../../application/use-cases/request-custom-plugin';
 import { ListMyCustomRequestsUseCase } from '../../application/use-cases/list-my-custom-requests';
 import { FulfillCustomPluginRequestUseCase } from '../../application/use-cases/fulfill-custom-plugin-request';
@@ -30,6 +31,7 @@ import {
   activatePluginsBatchController,
   chooseBusinessProfileController,
   deactivatePluginController,
+  cancelPluginDeactivationController,
   fulfillCustomRequestController,
   getBusinessProfileRecommendationsController,
   getCatalogController,
@@ -70,6 +72,7 @@ export interface AppDependencies {
     quoteActivation: QuoteActivationUseCase;
     activatePlugin: ActivatePluginUseCase;
     deactivatePlugin: DeactivatePluginUseCase;
+    cancelPluginDeactivation: CancelPluginDeactivationUseCase;
     requestCustomPlugin: RequestCustomPluginUseCase;
     listMyCustomRequests: ListMyCustomRequestsUseCase;
     fulfillCustomRequest: FulfillCustomPluginRequestUseCase;
@@ -152,6 +155,12 @@ export function organizationRoutes(deps: AppDependencies): Hono<Vars> {
     requirePermission('plugins:manage'),
     validateParams(pluginCodeParamSchema),
     deactivatePluginController(useCases.deactivatePlugin));
+
+  r.post('/organizations/me/plugins/:code/cancel-deactivation',
+    requireOrganization(),
+    requirePermission('plugins:manage'),
+    validateParams(pluginCodeParamSchema),
+    cancelPluginDeactivationController(useCases.cancelPluginDeactivation));
 
   // Perfiles de negocio (recomendación de plugins)
   r.get('/organizations/me/business-profile',

@@ -141,6 +141,8 @@ export interface OrganizationPluginProps {
   status: OrganizationPluginStatus;
   activatedAt: Date;
   deactivatedAt: Date | null;
+  /** Desactivación programada: el módulo sigue activo hasta esta fecha (fin del periodo pago). Nulo = ninguna. */
+  deactivateAt: Date | null;
 }
 
 export class OrganizationPlugin {
@@ -156,6 +158,7 @@ export class OrganizationPlugin {
       status: 'active',
       activatedAt: now,
       deactivatedAt: null,
+      deactivateAt: null,
     });
   }
 
@@ -169,11 +172,12 @@ export class OrganizationPlugin {
       status: 'active',
       activatedAt: now,
       deactivatedAt: null,
+      deactivateAt: null,
     });
   }
 
   static fromPersistence(props: OrganizationPluginProps): OrganizationPlugin {
-    return new OrganizationPlugin({ ...props });
+    return new OrganizationPlugin({ ...props, deactivateAt: props.deactivateAt ?? null });
   }
 
   get organizationId(): string { return this.props.organizationId; }
@@ -183,6 +187,7 @@ export class OrganizationPlugin {
   get status(): OrganizationPluginStatus { return this.props.status; }
   get activatedAt(): Date { return this.props.activatedAt; }
   get deactivatedAt(): Date | null { return this.props.deactivatedAt; }
+  get deactivateAt(): Date | null { return this.props.deactivateAt; }
 
   get isActive(): boolean {
     return this.props.status === 'active';
@@ -195,6 +200,16 @@ export class OrganizationPlugin {
   deactivate(): void {
     this.props.status = 'disabled';
     this.props.deactivatedAt = new Date();
+    this.props.deactivateAt = null;
+  }
+
+  /** Lo deja programado: sigue activo (y funcionando) hasta `at`. */
+  scheduleDeactivation(at: Date): void {
+    this.props.deactivateAt = at;
+  }
+
+  cancelDeactivation(): void {
+    this.props.deactivateAt = null;
   }
 
   toPersistence(): OrganizationPluginProps {
