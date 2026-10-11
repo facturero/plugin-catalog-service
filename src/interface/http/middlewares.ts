@@ -66,6 +66,12 @@ export function requirePermission(perm: string): MiddlewareHandler<{
 
 export function errorHandler(err: Error, c: Context): Response {
   if (err instanceof AppError) {
+    if (err.httpStatus < 500) {
+      // `@hono/otel` marca como error del span (y registra la excepción) todo lo que llegue a `onError`, incluso un 404 o una
+      // validación fallida. Eso llenaría la pestaña Exceptions y la tasa de errores de SigNoz con respuestas NORMALES de negocio.
+      // Se limpia aquí: en el servidor solo los 5xx son errores. El 4xx que ve la persona queda marcado en la traza del navegador.
+      c.error = undefined;
+    }
     return c.json(
       {
         code: err.code,

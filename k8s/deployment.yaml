@@ -88,6 +88,10 @@ spec:
                   key: name
             - name: CORS_ORIGIN
               value: "https://steep-geology-napping.ngrok-free.dev"
+            - name: OTEL_SERVICE_NAME
+              value: "plugin-catalog-service"
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: "http://otel-collector.observability.svc.cluster.local:4318"
             - name: RABBITMQ_URL
               valueFrom:
                 secretKeyRef:
