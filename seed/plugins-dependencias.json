@@ -2,10 +2,10 @@
   "meta": {
     "proyecto": "external (CRM + Facturacion Electronica)",
     "descripcion": "Catalogo de plugins/modulos VENDIBLES (activables/desactivables por plan de organizacion), con su estado, servicio real que lo implementa (cuando existe) y dependencias entre si. 'infra_existente' son piezas base del sistema que toda organizacion tiene siempre activas: no se venden ni se activan/desactivan por plan y se siembran en la tabla plugins con is_core = true, y algunas viven fisicamente dentro de otro servicio (ver campo 'note' en cada una). 'phase' es el orden sugerido de construccion (0 = ya existe/base, mayor numero = depende de mas cosas). 'status' de modulos: hecho, parcial, falta. 'service': carpeta real dentro de external/ que lo implementa, o null si no existe codigo.",
-    "total_modulos": 62,
-    "hechos": 12,
+    "total_modulos": 64,
+    "hechos": 13,
     "parciales": 4,
-    "faltan": 46
+    "faltan": 47
   },
   "infra_existente": [
     {
@@ -816,6 +816,30 @@
         "ecommerce.cart"
       ],
       "description": "Calcula costos de envio segun destino y peso, genera la guia de despacho y permite hacer seguimiento del estado del pedido hasta que llega al cliente."
+    },
+    {
+      "id": "restaurant.floorplan",
+      "name": "Mapa del restaurante (mesas, plano y horarios)",
+      "category": "Restaurantes y Reservas",
+      "status": "hecho",
+      "phase": 3,
+      "service": "restaurant-service",
+      "depends_on": [
+        "org.establishments"
+      ],
+      "description": "Mapa del restaurante (mesas, plano y horarios): el dueño lista sus mesas con capacidad minima y maxima, dibuja opcionalmente el plano del local (paredes, puertas, mesas y zonas, con medidas reales en metros) y configura sus horarios con turnos y excepciones. Funciona sin plano: basta la lista de mesas."
+    },
+    {
+      "id": "restaurant.reservations",
+      "name": "Reservas de mesas",
+      "category": "Restaurantes y Reservas",
+      "status": "falta",
+      "phase": 4,
+      "service": null,
+      "depends_on": [
+        "restaurant.floorplan"
+      ],
+      "description": "Reserva de mesa por el cliente final desde una pagina publica: disponibilidad por turno, confirmacion por correo y aviso al restaurante. Se apoya en el mapa del restaurante (mesas, zonas y horarios)."
     }
   ]
 }

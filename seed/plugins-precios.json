@@ -79,6 +79,9 @@
     "ecommerce.online_catalog": 999,
     "ecommerce.cart": 999,
     "ecommerce.payment_gateways": 799,
-    "ecommerce.shipping": 599
+    "ecommerce.shipping": 599,
+
+    "restaurant.floorplan": 599,
+    "restaurant.reservations": 699
   }
 }

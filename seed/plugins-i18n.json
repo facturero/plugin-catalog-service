@@ -15,7 +15,8 @@
       "Proyectos": { "en": "Projects", "fr": "Projets" },
       "Punto de Venta": { "en": "Point of Sale", "fr": "Point de vente" },
       "Recursos Humanos": { "en": "Human Resources", "fr": "Ressources humaines" },
-      "Ventas y CRM": { "en": "Sales and CRM", "fr": "Ventes et CRM" }
+      "Ventas y CRM": { "en": "Sales and CRM", "fr": "Ventes et CRM" },
+      "Restaurantes y Reservas": { "en": "Restaurants and Reservations", "fr": "Restaurants et réservations" }
     }
   },
 
@@ -298,5 +299,14 @@
   "ecommerce.shipping": {
     "en": { "name": "Shipping management", "description": "Computes shipping costs by destination and weight, generates the dispatch note and lets you track the order's status until it reaches the customer." },
     "fr": { "name": "Gestion des expéditions", "description": "Calcule les frais de port selon la destination et le poids, génère le bon d'expédition et permet de suivre l'état de la commande jusqu'à sa réception par le client." }
+  },
+
+  "restaurant.floorplan": {
+    "en": { "name": "Restaurant map (tables, floor plan and opening hours)", "description": "Restaurant map (tables, floor plan and opening hours): the owner lists their tables with minimum and maximum capacity, optionally draws the venue's floor plan (walls, doors, tables and zones, with real measurements in metres) and sets up opening hours with shifts and exceptions. It works without a floor plan: a simple table list is enough." },
+    "fr": { "name": "Plan du restaurant (tables, plan et horaires)", "description": "Plan du restaurant (tables, plan et horaires) : le propriétaire liste ses tables avec la capacité minimale et maximale, dessine éventuellement le plan du local (murs, portes, tables et zones, avec des mesures réelles en mètres) et configure ses horaires avec services et exceptions. Il fonctionne sans plan : une simple liste de tables suffit." }
+  },
+  "restaurant.reservations": {
+    "en": { "name": "Table reservations", "description": "Table reservation by the end customer from a public page: availability per shift, confirmation by email and notice to the restaurant. It builds on the restaurant map (tables, zones and opening hours)." },
+    "fr": { "name": "Réservations de tables", "description": "Réservation de table par le client final depuis une page publique : disponibilité par service, confirmation par e-mail et avis au restaurant. Elle s'appuie sur le plan du restaurant (tables, zones et horaires)." }
   }
 }

@@ -58,7 +58,8 @@
         { "code": "pos.payment_methods", "recommendation": "essential", "sort_order": 5 },
         { "code": "inventory.kardex", "recommendation": "suggested", "sort_order": 7 },
         { "code": "production.bom", "recommendation": "suggested", "sort_order": 8 },
-        { "code": "hr.attendance", "recommendation": "suggested", "sort_order": 9 }
+        { "code": "hr.attendance", "recommendation": "suggested", "sort_order": 9 },
+        { "code": "restaurant.floorplan", "recommendation": "suggested", "sort_order": 10 }
       ],
       "translations": {
         "en": { "name": "Restaurant / café", "description": "Restaurant, café or food service business." },
