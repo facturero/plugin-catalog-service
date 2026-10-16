@@ -3,9 +3,9 @@
     "proyecto": "external (CRM + Facturacion Electronica)",
     "descripcion": "Catalogo de plugins/modulos VENDIBLES (activables/desactivables por plan de organizacion), con su estado, servicio real que lo implementa (cuando existe) y dependencias entre si. 'infra_existente' son piezas base del sistema que toda organizacion tiene siempre activas: no se venden ni se activan/desactivan por plan y se siembran en la tabla plugins con is_core = true, y algunas viven fisicamente dentro de otro servicio (ver campo 'note' en cada una). 'phase' es el orden sugerido de construccion (0 = ya existe/base, mayor numero = depende de mas cosas). 'status' de modulos: hecho, parcial, falta. 'service': carpeta real dentro de external/ que lo implementa, o null si no existe codigo.",
     "total_modulos": 64,
-    "hechos": 13,
+    "hechos": 14,
     "parciales": 4,
-    "faltan": 47
+    "faltan": 46
   },
   "infra_existente": [
     {
@@ -253,13 +253,11 @@
       "id": "finance.general_ledger",
       "name": "Contabilidad general (libro mayor, diario)",
       "category": "Facturacion y Finanzas",
-      "status": "falta",
+      "status": "hecho",
       "phase": 4,
-      "service": null,
-      "depends_on": [
-        "finance.accounts_receivable_payable"
-      ],
-      "description": "El libro mayor y el diario contable: registra cada movimiento economico como una partida doble (debito/credito) contra el plan de cuentas de la empresa, siendo la base para armar los estados financieros."
+      "service": "accounting-service",
+      "depends_on": [],
+      "description": "La contabilidad de la empresa: plan de cuentas, ejercicios y periodos con cierre, asientos de partida doble (debito/credito) con numeracion propia, reversas auditables, centros de costo y balance de comprobacion y libro mayor. Es la base para armar los estados financieros y para que el resto de los modulos contabilicen solos."
     },
     {
       "id": "finance.bank_reconciliation",

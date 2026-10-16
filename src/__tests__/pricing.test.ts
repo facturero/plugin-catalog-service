@@ -74,7 +74,10 @@ describe('precios de los módulos (seed/plugins-precios.json)', () => {
     });
 
     it('contabilidad completa desde cero (facturar + por cobrar/pagar + libro mayor + reportes): 42,96 USD, por debajo de los 55 USD de Contífico', () => {
-      const total = totalDesdeCero('finance.financial_reports');
+      // La contabilidad ya no arrastra las cuentas por cobrar/pagar (se apoyan en ella, no al revés): el paquete completo
+      // se arma pidiendo las dos cosas, y el total no cambia respecto a cuando una exigía a la otra.
+      const vistos = new Set<string>();
+      const total = ['finance.financial_reports', 'finance.accounts_receivable_payable'].reduce((suma, id) => suma + totalDesdeCero(id, vistos), 0);
       expect(total).toBe(4296);
       expect(total).toBeLessThan(5500);
     });

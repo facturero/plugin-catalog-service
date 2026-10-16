@@ -108,8 +108,8 @@
     "fr": { "name": "Comptes clients / comptes fournisseurs", "description": "Suit ce que chaque client doit à l'entreprise (créances) et ce que l'entreprise doit à ses fournisseurs (dettes), avec les échéances, les paiements partiels et le solde restant dû." }
   },
   "finance.general_ledger": {
-    "en": { "name": "General ledger (ledger and journal)", "description": "The general ledger and accounting journal: it records every economic movement as a double entry (debit/credit) against the company's chart of accounts, and is the basis for producing the financial statements." },
-    "fr": { "name": "Comptabilité générale (grand livre, journal)", "description": "Le grand livre et le journal comptable : chaque mouvement économique est enregistré en partie double (débit/crédit) sur le plan comptable de l'entreprise, ce qui sert de base à l'établissement des états financiers." }
+    "en": { "name": "General ledger (ledger and journal)", "description": "The company's accounting: chart of accounts, fiscal years and periods with closing, double-entry journal entries (debit/credit) with their own numbering, auditable reversals, cost centres, and the trial balance and general ledger. It is the basis for the financial statements and for the other modules to post automatically." },
+    "fr": { "name": "Comptabilité générale (grand livre, journal)", "description": "La comptabilité de l'entreprise : plan comptable, exercices et périodes avec clôture, écritures en partie double (débit/crédit) avec numérotation propre, contrepassations auditables, centres de coûts, balance de vérification et grand livre. C'est la base des états financiers et de la comptabilisation automatique des autres modules." }
   },
   "finance.bank_reconciliation": {
     "en": { "name": "Bank reconciliation", "description": "Compares the movements recorded in the accounts against the actual bank statement, flagging differences (uncashed cheques, unrecorded bank fees) so both sides match." },
