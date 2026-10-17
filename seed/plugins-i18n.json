@@ -137,8 +137,8 @@
     "fr": { "name": "Gestion de plusieurs entrepôts", "description": "Gère un ou plusieurs emplacements physiques (entrepôts) où le stock est conservé, afin de savoir dans quel entrepôt précis se trouve chaque unité." }
   },
   "inventory.suppliers": {
-    "en": { "name": "Supplier management", "description": "Records the company's suppliers: contact details, the products they supply, payment terms and usual delivery lead times." },
-    "fr": { "name": "Gestion des fournisseurs", "description": "Enregistre les fournisseurs de l'entreprise : coordonnées, produits fournis, conditions de paiement et délais de livraison habituels." }
+    "en": { "name": "Supplier management", "description": "The company's supplier master: tax ID, legal name, contact, address, credit days and whether it is a related party. Suppliers are deactivated instead of deleted and are the basis for purchase orders, supplier invoices and withholdings." },
+    "fr": { "name": "Gestion des fournisseurs", "description": "Le fichier des fournisseurs de l'entreprise : identifiant fiscal, raison sociale, contact, adresse, jours de crédit et partie liée ou non. Les fournisseurs se désactivent au lieu de se supprimer et servent de base aux bons de commande, aux factures fournisseur et aux retenues." }
   },
   "inventory.kardex": {
     "en": { "name": "Stock control / Kardex (FIFO, LIFO, WAC)", "description": "Keeps a detailed record of every product's inflows and outflows and computes inventory cost using a chosen method (FIFO: first in, first out; LIFO: last in, first out; or WAC: weighted average cost), giving the exact cost of goods sold and the value of remaining inventory." },
@@ -246,8 +246,8 @@
     "fr": { "name": "Comparaison des devis", "description": "Permet de demander des devis à plusieurs fournisseurs pour un même besoin d'achat et de les comparer côte à côte (prix, délai de livraison, conditions) avant de choisir." }
   },
   "purchasing.purchase_orders": {
-    "en": { "name": "Purchase orders", "description": "The formal document sent to a supplier confirming what is being bought, the quantity, the agreed price and the expected delivery date; when the goods arrive, it updates inventory automatically." },
-    "fr": { "name": "Bons de commande", "description": "Document formel envoyé à un fournisseur confirmant ce qui est acheté, la quantité, le prix convenu et la date de livraison prévue ; à la réception de la marchandise, le stock est mis à jour automatiquement." }
+    "en": { "name": "Purchase orders", "description": "Formal document committing a purchase to a supplier: lines with quantity, cost, discount and VAT, destination warehouse and expected delivery date. It is numbered when sent, can require another person's approval depending on the amount (segregation of duties) and is cancelled with a reason. On receipt of the goods it will update the inventory." },
+    "fr": { "name": "Bons de commande", "description": "Document formel qui engage un achat auprès d'un fournisseur : lignes avec quantité, coût, remise et TVA, entrepôt de destination et date de livraison prévue. Il est numéroté à l'envoi, peut exiger l'approbation d'une autre personne selon le montant (séparation des tâches) et s'annule avec un motif. À la réception des marchandises, il mettra l'inventaire à jour." }
   },
 
   "bi.dashboards": {
@@ -306,7 +306,7 @@
     "fr": { "name": "Plan du restaurant (tables, plan et horaires)", "description": "Plan du restaurant (tables, plan et horaires) : le propriétaire liste ses tables avec la capacité minimale et maximale, dessine éventuellement le plan du local (murs, portes, tables et zones, avec des mesures réelles en mètres) et configure ses horaires avec services et exceptions. Il fonctionne sans plan : une simple liste de tables suffit." }
   },
   "restaurant.reservations": {
-    "en": { "name": "Table reservations", "description": "Table reservation by the end customer from a public page: availability per shift, confirmation by email and notice to the restaurant. It builds on the restaurant map (tables, zones and opening hours)." },
-    "fr": { "name": "Réservations de tables", "description": "Réservation de table par le client final depuis une page publique : disponibilité par service, confirmation par e-mail et avis au restaurant. Elle s'appuie sur le plan du restaurant (tables, zones et horaires)." }
+    "en": { "name": "Table reservations", "description": "Table reservation by the end customer from the restaurant's own public page: availability per shift, several tables for large groups, email confirmation with a cancellation link and a notice to the restaurant. Staff can also take phone reservations and keep the day's list. It builds on the restaurant map (tables, zones and opening hours)." },
+    "fr": { "name": "Réservations de tables", "description": "Réservation de table par le client final depuis la page publique propre au restaurant : disponibilité par service, plusieurs tables pour les grands groupes, confirmation par e-mail avec lien d'annulation et avis au restaurant. Le personnel peut aussi saisir les réservations par téléphone et suivre la liste du jour. Elle s'appuie sur le plan du restaurant (tables, zones et horaires)." }
   }
 }

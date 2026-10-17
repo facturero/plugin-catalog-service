@@ -3,9 +3,9 @@
     "proyecto": "external (CRM + Facturacion Electronica)",
     "descripcion": "Catalogo de plugins/modulos VENDIBLES (activables/desactivables por plan de organizacion), con su estado, servicio real que lo implementa (cuando existe) y dependencias entre si. 'infra_existente' son piezas base del sistema que toda organizacion tiene siempre activas: no se venden ni se activan/desactivan por plan y se siembran en la tabla plugins con is_core = true, y algunas viven fisicamente dentro de otro servicio (ver campo 'note' en cada una). 'phase' es el orden sugerido de construccion (0 = ya existe/base, mayor numero = depende de mas cosas). 'status' de modulos: hecho, parcial, falta. 'service': carpeta real dentro de external/ que lo implementa, o null si no existe codigo.",
     "total_modulos": 64,
-    "hechos": 14,
+    "hechos": 15,
     "parciales": 4,
-    "faltan": 46
+    "faltan": 45
   },
   "infra_existente": [
     {
@@ -335,13 +335,13 @@
       "id": "inventory.suppliers",
       "name": "Gestion de proveedores",
       "category": "Inventario y Cadena de Suministro",
-      "status": "falta",
+      "status": "hecho",
       "phase": 1,
-      "service": null,
+      "service": "purchasing-service",
       "depends_on": [
         "admin.multitenant"
       ],
-      "description": "Registra los proveedores de la empresa: datos de contacto, productos que suministran, condiciones de pago y plazos de entrega habituales."
+      "description": "El maestro de proveedores de la empresa: RUC, cedula o pasaporte, razon social, contacto, direccion, dias de credito y si es parte relacionada. Se desactivan en vez de borrarse y son la base de las ordenes de compra, de la factura del proveedor y de las retenciones."
     },
     {
       "id": "inventory.kardex",
@@ -658,13 +658,14 @@
       "id": "purchasing.purchase_orders",
       "name": "Ordenes de compra",
       "category": "Compras",
-      "status": "falta",
+      "status": "hecho",
       "phase": 4,
-      "service": null,
+      "service": "purchasing-service",
       "depends_on": [
-        "purchasing.quote_comparison"
+        "inventory.suppliers",
+        "inventory.warehouses"
       ],
-      "description": "Documento formal enviado a un proveedor confirmando que se compra, cantidad, precio acordado y fecha de entrega esperada; al recibir la mercancia, actualiza automaticamente el inventario."
+      "description": "Documento formal que compromete la compra con un proveedor: lineas con cantidad, costo, descuento e IVA, bodega de destino y fecha de entrega esperada. Se numera al enviarla, puede pedir la aprobacion de otra persona segun el monto (separacion de funciones) y se cancela con motivo. Al recibir la mercancia actualizara el inventario."
     },
     {
       "id": "bi.dashboards",
@@ -831,13 +832,13 @@
       "id": "restaurant.reservations",
       "name": "Reservas de mesas",
       "category": "Restaurantes y Reservas",
-      "status": "falta",
+      "status": "hecho",
       "phase": 4,
-      "service": null,
+      "service": "restaurant-service",
       "depends_on": [
         "restaurant.floorplan"
       ],
-      "description": "Reserva de mesa por el cliente final desde una pagina publica: disponibilidad por turno, confirmacion por correo y aviso al restaurante. Se apoya en el mapa del restaurante (mesas, zonas y horarios)."
+      "description": "Reserva de mesa por el cliente final desde una pagina publica propia del restaurante: disponibilidad por turno, varias mesas para grupos grandes, confirmacion por correo con enlace para cancelar y aviso al restaurante. El personal tambien anota reservas por telefono y lleva la lista del dia. Se apoya en el mapa del restaurante (mesas, zonas y horarios)."
     }
   ]
 }
