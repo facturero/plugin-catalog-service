@@ -306,7 +306,7 @@
     "fr": { "name": "Plan du restaurant (tables, plan et horaires)", "description": "Plan du restaurant (tables, plan et horaires) : le propriétaire liste ses tables avec la capacité minimale et maximale, dessine éventuellement le plan du local (murs, portes, tables et zones, avec des mesures réelles en mètres) et configure ses horaires avec services et exceptions. Il fonctionne sans plan : une simple liste de tables suffit." }
   },
   "restaurant.reservations": {
-    "en": { "name": "Table reservations", "description": "Table reservation by the end customer from the restaurant's own public page: availability per shift, several tables for large groups, email confirmation with a cancellation link and a notice to the restaurant. Staff can also take phone reservations and keep the day's list. It builds on the restaurant map (tables, zones and opening hours)." },
-    "fr": { "name": "Réservations de tables", "description": "Réservation de table par le client final depuis la page publique propre au restaurant : disponibilité par service, plusieurs tables pour les grands groupes, confirmation par e-mail avec lien d'annulation et avis au restaurant. Le personnel peut aussi saisir les réservations par téléphone et suivre la liste du jour. Elle s'appuie sur le plan du restaurant (tables, zones et horaires)." }
+    "en": { "name": "Table reservations", "description": "Table reservation by the end customer from a public page: availability per shift, confirmation by email and notice to the restaurant. It builds on the restaurant map (tables, zones and opening hours)." },
+    "fr": { "name": "Réservations de tables", "description": "Réservation de table par le client final depuis une page publique : disponibilité par service, confirmation par e-mail et avis au restaurant. Elle s'appuie sur le plan du restaurant (tables, zones et horaires)." }
   }
 }
