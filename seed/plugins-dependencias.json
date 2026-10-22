@@ -3,9 +3,9 @@
     "proyecto": "external (CRM + Facturacion Electronica)",
     "descripcion": "Catalogo de plugins/modulos VENDIBLES (activables/desactivables por plan de organizacion), con su estado, servicio real que lo implementa (cuando existe) y dependencias entre si. 'infra_existente' son piezas base del sistema que toda organizacion tiene siempre activas: no se venden ni se activan/desactivan por plan y se siembran en la tabla plugins con is_core = true, y algunas viven fisicamente dentro de otro servicio (ver campo 'note' en cada una). 'phase' es el orden sugerido de construccion (0 = ya existe/base, mayor numero = depende de mas cosas). 'status' de modulos: hecho, parcial, falta. 'service': carpeta real dentro de external/ que lo implementa, o null si no existe codigo.",
     "total_modulos": 64,
-    "hechos": 16,
+    "hechos": 17,
     "parciales": 4,
-    "faltan": 44
+    "faltan": 43
   },
   "infra_existente": [
     {
@@ -241,13 +241,14 @@
       "id": "finance.accounts_receivable_payable",
       "name": "Cuentas por cobrar / cuentas por pagar",
       "category": "Facturacion y Finanzas",
-      "status": "falta",
+      "status": "hecho",
       "phase": 3,
-      "service": null,
+      "service": "treasury-service",
       "depends_on": [
-        "finance.electronic_invoicing"
+        "finance.electronic_invoicing",
+        "finance.general_ledger"
       ],
-      "description": "Lleva el control de cuanto le debe cada cliente a la empresa (cuentas por cobrar) y cuanto le debe la empresa a sus proveedores (cuentas por pagar), con fechas de vencimiento, pagos parciales y saldo pendiente."
+      "description": "Lleva el control de cuanto le debe cada cliente a la empresa (cuentas por cobrar) y cuanto le debe la empresa a sus proveedores (cuentas por pagar), con fechas de vencimiento, pagos parciales y saldo pendiente. Genera los asientos en contabilidad general."
     },
     {
       "id": "finance.general_ledger",
