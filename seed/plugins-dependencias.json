@@ -735,9 +735,9 @@
       "id": "comm.internal_chat",
       "name": "Chat interno",
       "category": "Comunicacion Interna",
-      "status": "falta",
+      "status": "hecho",
       "phase": 1,
-      "service": null,
+      "service": "chat-service",
       "depends_on": [
         "admin.users_roles"
       ],
