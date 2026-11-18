@@ -833,13 +833,13 @@
       "id": "restaurant.reservations",
       "name": "Reservas de mesas",
       "category": "Restaurantes y Reservas",
-      "status": "falta",
+      "status": "hecho",
       "phase": 4,
-      "service": null,
+      "service": "restaurant-service",
       "depends_on": [
         "restaurant.floorplan"
       ],
-      "description": "Reserva de mesa por el cliente final desde una pagina publica: disponibilidad por turno, confirmacion por correo y aviso al restaurante. Se apoya en el mapa del restaurante (mesas, zonas y horarios)."
+      "description": "Reserva de mesa por el cliente final desde una pagina publica propia del restaurante: disponibilidad por turno, varias mesas para grupos grandes, confirmacion por correo con enlace para cancelar y aviso al restaurante. El personal tambien anota reservas por telefono y lleva la lista del dia. Se apoya en el mapa del restaurante (mesas, zonas y horarios)."
     }
   ]
 }
