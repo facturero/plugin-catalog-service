@@ -28,7 +28,7 @@ export const createDiscountSchema = z
     /** Solo con `amountCents`: 'plugin' (por defecto) resta ese monto a CADA módulo al mes; 'total' lo resta una sola vez. */
     fixedAppliesTo: z.enum(['plugin', 'total']).optional(),
     pluginCodes: z.array(z.string().min(1)).max(100).optional(),
-    organizationId: z.string().uuid().nullable().optional(),
+    organizationId: z.string().guid().nullable().optional(),
     durationMonths: z.number().int().positive('La duración debe ser de al menos 1 mes.').nullable().optional(),
   })
   .refine((v) => (v.percent === undefined) !== (v.amountCents === undefined), {
@@ -52,7 +52,7 @@ export const updateDiscountSchema = z.object({
 });
 
 export const discountIdParamSchema = z.object({
-  id: z.string().uuid('El id del descuento debe ser un UUID válido.'),
+  id: z.string().guid('El id del descuento debe ser un UUID válido.'),
 });
 
 /** Activar un módulo, opcionalmente con un código. El cuerpo puede venir vacío. */

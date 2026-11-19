@@ -7,7 +7,7 @@ export const pluginCodeParamSchema = z.object({
 });
 
 export const requestIdParamSchema = z.object({
-  id: z.string().uuid('El id de la solicitud debe ser un UUID válido.'),
+  id: z.string().guid('El id de la solicitud debe ser un UUID válido.'),
 });
 
 export const requestCustomPluginSchema = z.object({
@@ -20,7 +20,7 @@ export const fulfillCustomRequestSchema = z.object({
   description: z.string().min(1, 'La descripción es obligatoria.').max(5000),
   priceCents: z.number().int().nonnegative('El precio no puede ser negativo.'),
   imageUrl: z.string().url().max(500).nullable().optional(),
-  basedOnPluginId: z.string().uuid().nullable().optional(),
+  basedOnPluginId: z.string().guid().nullable().optional(),
 });
 
 export const rejectCustomRequestSchema = z.object({
@@ -47,7 +47,7 @@ export const activatePluginsBatchSchema = z.object({
 });
 
 function validate<T extends ZodSchema>(source: 'json' | 'param', schema: T) {
-  return zValidator(source, schema as never, (result) => {
+  return zValidator(source, schema, (result) => {
     if (!result.success) {
       const details = result.error.issues.map((i) => ({
         field: i.path.join('.') || '(root)',
